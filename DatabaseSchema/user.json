@@ -1,0 +1,13 @@
+{
+    "userId" : "ObjectId",
+    "name*" : "String",
+    "surname" : "String",
+    "sex*" : "String(ENUM)",
+    "age" : "Number",
+    "phoneNumber*" : "String",
+    "tags*" : "Array",
+    "aboutMe*" : "String",
+    "img" :  "photoId",
+    
+    "events" : "Array(eventId)"
+}

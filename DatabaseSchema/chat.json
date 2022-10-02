@@ -1,0 +1,23 @@
+{
+    "chatId" : "ObjectId",
+    "chatMessages" : [
+        {
+            "messageId" : "ObjectId",
+            "ownerId" : "userId",
+            "message" : "String",
+            "dateTime" : "new Date()"
+        },
+        {
+            "messageId" : "...",
+            "ownerId" : "...",
+            "message" : "...",
+            "dateTime" : "..."
+        },
+        {
+            "messageId" : "...",
+            "ownerId" : "...",
+            "message" : "...",
+            "dateTime" : "..."
+        }
+    ]
+}

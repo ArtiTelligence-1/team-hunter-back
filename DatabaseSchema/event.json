@@ -1,0 +1,12 @@
+{
+    "eventId" : "ObjectId",
+    "title*" : "String",
+    "kindOfSport*" : "kindOfSportId",
+    "numOfPeople*" : "Number",
+    "ageInterval*" : "String('to18', '18to25', '25to', 'everybody')",
+    "timeOfEvent*" : "String(DateTime)",
+    "location*" : "String",
+    "description*" : "String",
+
+    "currentNumOfPeople" : "Number"
+}
