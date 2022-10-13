@@ -1,0 +1,6 @@
+{
+    "messageId" : "Int64",
+    "ownerId" : "userId(from Users)",
+    "message" : "String",
+    "dateTime" : "new Date()"
+}

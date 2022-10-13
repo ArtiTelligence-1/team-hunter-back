@@ -1,12 +1,14 @@
 {
-    "eventId" : "ObjectId",
+    "eventId" : "Int64",
     "title*" : "String",
-    "kindOfSport*" : "kindOfSportId",
+    "typeOfEvent*" : "eventTypeId(from EventTypes)",
     "numOfPeople*" : "Number",
     "ageInterval*" : "String('to18', '18to25', '25to', 'everybody')",
     "timeOfEvent*" : "String(DateTime)",
     "location*" : "String",
-    "description*" : "String",
+    "description*": "String",
+    "tags": "Array(tagId(from Tags))",
 
-    "currentNumOfPeople" : "Number"
+    "currentNumOfPeople": "Number",
+    "chatId":  "chatId(from Chats)"
 }

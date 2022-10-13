@@ -1,4 +1,4 @@
 {
-    "photoId" : "ObjectId",
+    "photoId" : "Int64",
     "photo" : "BSON"
 }

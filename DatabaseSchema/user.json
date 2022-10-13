@@ -1,13 +1,13 @@
 {
-    "userId" : "ObjectId",
+    "userId" : "Int64",
     "name*" : "String",
     "surname" : "String",
     "sex*" : "String(ENUM)",
     "age" : "Number",
     "phoneNumber*" : "String",
-    "tags*" : "Array",
+    "tags*" : "Array(tagId(from Tags))",
     "aboutMe*" : "String",
-    "img" :  "photoId",
+    "photo" :  "photoId(from UserPhotos)",
     
-    "events" : "Array(eventId)"
+    "events" : "Array(eventId(from Events))"
 }
