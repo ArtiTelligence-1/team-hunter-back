@@ -14,7 +14,6 @@ builder.Services.AddSingleton<EventMessageService>();
 builder.Services.AddSingleton<EventTagService>();
 
 
-
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
