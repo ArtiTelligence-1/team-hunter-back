@@ -5,7 +5,7 @@ using TeamHunterBackend.Schemas;
 
 namespace TeamHunterBackend.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IMongoCollection<User> _users;
 

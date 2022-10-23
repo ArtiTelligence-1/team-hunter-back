@@ -5,11 +5,11 @@ using TeamHunterBackend.Schemas;
 
 namespace TeamHunterBackend.Services
 {
-    public class MessageService
+    public class EventService : IEventService
     {
         private readonly IMongoCollection<Event> _events;
 
-        public MessageService(IOptions<DBSettings> options)
+        public EventService(IOptions<DBSettings> options)
         {
             var mongoClient = new MongoClient(options.Value.ConnectionString);
             _events = mongoClient.GetDatabase(options.Value.DatabaseName).GetCollection<Event>(options.Value.CollectionName[2]);

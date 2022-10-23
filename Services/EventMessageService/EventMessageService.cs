@@ -5,7 +5,7 @@ using TeamHunterBackend.Schemas;
 
 namespace TeamHunterBackend.Services
 {
-    public class EventMessageService
+    public class EventMessageService : IEventMessageService
     {
         private readonly IMongoCollection<Message> _message;
 

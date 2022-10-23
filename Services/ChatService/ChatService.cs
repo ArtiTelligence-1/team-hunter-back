@@ -5,7 +5,7 @@ using TeamHunterBackend.Schemas;
 
 namespace TeamHunterBackend.Services
 {
-    public class ChatService
+    public class ChatService : IChatService
     {
         private readonly IMongoCollection<Chat> _chats;
 

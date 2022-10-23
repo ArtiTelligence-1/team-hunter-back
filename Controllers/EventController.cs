@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -11,15 +12,17 @@ namespace TeamHunterBackend.Controllers
     //[DisableCors]
     public class EventController : ControllerBase
     {
-        private readonly MessageService _eventService;
+        private readonly EventService _eventService;
 
-    public EventController(MessageService eventService) =>
+    public EventController(EventService eventService) =>
         _eventService = eventService;
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("getEvents")]
     public async Task<List<Event>> GetAllEvents() =>
         await _eventService.GetEvents();
 
+    
     [HttpGet("getEvent/{Id}")]
     public async Task<ActionResult<Event>> GetEventById(int Id)
     {
@@ -41,6 +44,7 @@ namespace TeamHunterBackend.Controllers
     public async Task<List<Event>> GetEventByTag(int Id) =>
         await _eventService.GetEventByTag(Id);
 
+    [Authorize]
     [HttpPost("CreateEvent")]
     public async Task<IActionResult> CreateEvent(Event newEvent)
     {
@@ -49,6 +53,7 @@ namespace TeamHunterBackend.Controllers
         return CreatedAtAction(nameof(GetEventById), new { Id = newEvent.EventId }, newEvent);
     }
 
+    [Authorize]
     [HttpPut("UpdateEvent/{Id}")]
     public async Task<IActionResult> UpdateEvent(int Id, Event updatedEvent) 
     {
@@ -66,6 +71,7 @@ namespace TeamHunterBackend.Controllers
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("DeleteEvent/{Id}")]
     public async Task<IActionResult> DeleteEvent(int Id)
     {

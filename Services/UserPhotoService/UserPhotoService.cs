@@ -5,7 +5,7 @@ using TeamHunterBackend.Schemas;
 
 namespace TeamHunterBackend.Services
 {
-    public class UserPhotoService
+    public class UserPhotoService : IUserPhotoService
     {
         private readonly IMongoCollection<UserPhoto> _userPhotos;
 

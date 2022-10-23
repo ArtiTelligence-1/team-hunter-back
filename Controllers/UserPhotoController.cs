@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -16,6 +17,7 @@ namespace TeamHunterBackend.Controllers
     public UserPhotoController(UserPhotoService userService) =>
         _userPhotoService = userService;
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("GetUserPhoto/{Id}")]
     public async Task<ActionResult<UserPhoto>> GetUserPhotoById(int Id)
     {
@@ -28,7 +30,8 @@ namespace TeamHunterBackend.Controllers
 
         return userPhoto;
     }
-
+    
+    [Authorize(Roles = "User")]
     [HttpPost("AddUserPhoto")]
     public async Task<IActionResult> AddUserPhoto(UserPhoto newUserPhoto)
     {
@@ -37,6 +40,7 @@ namespace TeamHunterBackend.Controllers
         return CreatedAtAction(nameof(GetUserPhotoById), new { Id = newUserPhoto.PhotoId }, newUserPhoto);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPut("UpdateUserPhoto/{Id}")]
     public async Task<IActionResult> UpdateUserPhotoById(int Id, UserPhoto updatedUserPhoto)
     {
@@ -54,6 +58,7 @@ namespace TeamHunterBackend.Controllers
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("DeleteUserPhoto/{Id}")]
     public async Task<IActionResult> DeleteUserPhotoById(int Id)
     {

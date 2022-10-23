@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -16,10 +17,12 @@ namespace TeamHunterBackend.Controllers
     public MessageController(EventMessageService messageService) =>
         _messageService = messageService;
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("getMessages")]
     public async Task<List<Message>> GetAllMessages() =>
         await _messageService.GetMessages();
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("getMessage/{Id}")]
     public async Task<ActionResult<Message>> GetMessageById(int Id)
     {
@@ -33,6 +36,7 @@ namespace TeamHunterBackend.Controllers
         return _message;
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost("CreateMessage")]
     public async Task<IActionResult> CreateMessage(Message newMessage)
     {
@@ -41,6 +45,7 @@ namespace TeamHunterBackend.Controllers
         return CreatedAtAction(nameof(GetMessageById), new { Id = newMessage.MessageId }, newMessage);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPut("UpdateMessage/{Id}")]
     public async Task<IActionResult> UpdateMessage(int Id, Message updatedMessage) 
     {
@@ -58,6 +63,7 @@ namespace TeamHunterBackend.Controllers
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("DeleteMessage/{Id}")]
     public async Task<IActionResult> DeleteMessage(int Id)
     {

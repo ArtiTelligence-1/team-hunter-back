@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -22,12 +23,13 @@ namespace TeamHunterBackend.Controllers
     // {
     //     return "Hello World!";
     // }
-    //[EnableCors("Policy")]
+    [Authorize(Roles = "Admin")]
     [HttpGet("getUsers")]
     public async Task<List<User>> GetAllUsers() =>
         await _userService.GetUsers();
 
-    //[EnableCors("Policy")]
+    //[Authorize(Roles = "User, Admin")]
+    [Authorize]
     [HttpGet("getUser/{Id}")]
     public async Task<ActionResult<User>> GetUserById(int Id)
     {
@@ -41,7 +43,6 @@ namespace TeamHunterBackend.Controllers
         return user;
     }
 
-    //[EnableCors("Policy")]
     [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser(User newUser)
     {
@@ -50,6 +51,7 @@ namespace TeamHunterBackend.Controllers
         return CreatedAtAction(nameof(GetUserById), new { Id = newUser.UserId }, newUser);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPut("UpdateUser/{Id}")]
     public async Task<IActionResult> UpdateUser(int Id, User updatedUser)
     {
@@ -67,6 +69,7 @@ namespace TeamHunterBackend.Controllers
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("DeleteUser/{Id}")]
     public async Task<IActionResult> DeleteUser(int Id)
     {

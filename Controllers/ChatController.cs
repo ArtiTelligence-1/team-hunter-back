@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -15,11 +16,13 @@ namespace TeamHunterBackend.Controllers
 
         public ChatController(ChatService chatService) =>
             _chatService = chatService;
-            
+
+        [Authorize(Roles = "Admin")]    
         [HttpGet("getChats")]
         public async Task<List<Chat>> GetAllChats() =>
             await _chatService.GetChats();
 
+        [Authorize]
         [HttpGet("getChat/{Id}")]
         public async Task<ActionResult<Chat>> GetChatById(int Id)
         {
@@ -33,6 +36,7 @@ namespace TeamHunterBackend.Controllers
             return _chat;
         }
 
+        [Authorize]
         [HttpPost("CreateChat")]
         public async Task<IActionResult> CreateChat(Chat newChat)
         {
@@ -41,6 +45,7 @@ namespace TeamHunterBackend.Controllers
             return CreatedAtAction(nameof(GetChatById), new { Id = newChat.ChatId }, newChat);
         }
 
+        [Authorize]
         [HttpPut("UpdateChat/{Id}")]
         public async Task<IActionResult> UpdateEvent(int Id, Chat updatedChat) 
         {
@@ -58,6 +63,7 @@ namespace TeamHunterBackend.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteChat/{Id}")]
         public async Task<IActionResult> DeleteChat(int Id)
         {

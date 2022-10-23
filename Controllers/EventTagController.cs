@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using TeamHunterBackend.Schemas;
@@ -16,10 +17,12 @@ namespace TeamHunterBackend.Controllers
     public EventTagController(EventTagService eventTagService) =>
         _eventTagService = eventTagService;
 
+    [Authorize]
     [HttpGet("getEventTags")]
     public async Task<List<EventTag>> GetAllEventTags() =>
         await _eventTagService.GetEventTags();
 
+    [Authorize]
     [HttpGet("getEventTag/{Id}")]
     public async Task<ActionResult<EventTag>> GetEventTagById(int Id)
     {
@@ -33,6 +36,7 @@ namespace TeamHunterBackend.Controllers
         return _eventTag;
     }
 
+    [Authorize]
     [HttpPost("CreateEventTag")]
     public async Task<IActionResult> CreateEventTag(EventTag newEventTag)
     {
@@ -41,6 +45,7 @@ namespace TeamHunterBackend.Controllers
         return CreatedAtAction(nameof(GetEventTagById), new { Id = newEventTag.EventTagId }, newEventTag);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("DeleteEventTag/{Id}")]
     public async Task<IActionResult> DeleteEventTag(int Id)
     {
