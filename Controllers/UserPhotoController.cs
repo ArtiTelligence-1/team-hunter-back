@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -9,15 +10,17 @@ namespace TeamHunterBackend.Controllers
     [ApiController]
     [Route("[controller]")]
     [EnableCors("Policy")]
-    //[DisableCors]
     public class UserPhotoController : ControllerBase
     {
         private readonly UserPhotoService _userPhotoService;
+        private readonly IGenerateIDService _generateID;
 
-    public UserPhotoController(UserPhotoService userService) =>
-        _userPhotoService = userService;
-
-    [Authorize(Roles = "Admin")]
+    public UserPhotoController(UserPhotoService userPhotoService, IGenerateIDService generateID)
+    {
+        _userPhotoService = userPhotoService;
+        _generateID = generateID;
+    }
+    // [Authorize(Roles = "Admin")]
     [HttpGet("GetUserPhoto/{Id}")]
     public async Task<ActionResult<UserPhoto>> GetUserPhotoById(int Id)
     {
@@ -27,14 +30,14 @@ namespace TeamHunterBackend.Controllers
         {
             return NotFound();
         }
-
-        return userPhoto;
+        return Redirect(userPhoto.Photo!);
     }
     
     [Authorize(Roles = "User")]
     [HttpPost("AddUserPhoto")]
     public async Task<IActionResult> AddUserPhoto(UserPhoto newUserPhoto)
     {
+        newUserPhoto.PhotoId = _generateID.GenerateID("userPhoto_id");
         await _userPhotoService.AddUserPhoto(newUserPhoto);
 
         return CreatedAtAction(nameof(GetUserPhotoById), new { Id = newUserPhoto.PhotoId }, newUserPhoto);

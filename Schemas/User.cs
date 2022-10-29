@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -5,12 +7,12 @@ namespace TeamHunterBackend.Schemas
 {
     public class User
     {
-        //[System.ComponentModel.DataAnnotations.Required]
         [BsonId]
+        [Key]
         [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
         public int UserId { get; set; }
-
+//add USERNAME
         [BsonElement("name")]
         public string? Name { get; set; }
 
@@ -23,8 +25,8 @@ namespace TeamHunterBackend.Schemas
         [BsonElement("age")]
         public int Age { get; set; }
 
-        [BsonElement("phoneNumber")]
-        public string? PhoneNumber { get; set; }
+        // [BsonElement("phoneNumber")]
+        // public string? PhoneNumber { get; set; }
 
         [BsonElement("tags")]
         public List<int>? Tags { get; set; } 

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -13,22 +14,21 @@ namespace TeamHunterBackend.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly IGenerateIDService _generateID;
 
-    public UserController(UserService userService) =>
+    public UserController(UserService userService, IGenerateIDService generateID)
+    {
         _userService = userService;
+        _generateID = generateID;
+    }
         
-    // [Route("/")]
-    // [HttpGet]
-    // public string MainPage()
-    // {
-    //     return "Hello World!";
-    // }
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet("getUsers")]
     public async Task<List<User>> GetAllUsers() =>
         await _userService.GetUsers();
 
-    //[Authorize(Roles = "User, Admin")]
+    [Authorize(Roles = "User, Admin")]
     [Authorize]
     [HttpGet("getUser/{Id}")]
     public async Task<ActionResult<User>> GetUserById(int Id)
@@ -46,6 +46,7 @@ namespace TeamHunterBackend.Controllers
     [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser(User newUser)
     {
+        newUser.UserId = _generateID.GenerateID("user_id");
         await _userService.CreateUser(newUser);
 
         return CreatedAtAction(nameof(GetUserById), new { Id = newUser.UserId }, newUser);

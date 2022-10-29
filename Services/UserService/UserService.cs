@@ -8,7 +8,6 @@ namespace TeamHunterBackend.Services
     public class UserService : IUserService
     {
         private readonly IMongoCollection<User> _users;
-
         public UserService(IOptions<DBSettings> options)
         {
             var mongoClient = new MongoClient(options.Value.ConnectionString);
@@ -23,12 +22,11 @@ namespace TeamHunterBackend.Services
 
         public async Task CreateUser(User newUser) =>
             await _users.InsertOneAsync(newUser);
-
+            
         public async Task UpdateUser(int Id, User updateUser) => 
             await _users.ReplaceOneAsync(m => m.UserId == Id, updateUser);
 
         public async Task DeleteUserById(int Id) =>
-            await _users.DeleteOneAsync(m => m.UserId == Id);
-            
+            await _users.DeleteOneAsync(m => m.UserId== Id);            
     }
 }

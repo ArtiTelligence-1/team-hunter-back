@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -6,9 +7,9 @@ namespace TeamHunterBackend.Schemas
     public class Message
     {
         [BsonId]
+        [Key]
         [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
-        [BsonRequired]
         public int MessageId { get; set; }
 
         [BsonElement("ownerId")]

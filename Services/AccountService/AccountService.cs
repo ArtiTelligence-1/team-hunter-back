@@ -33,8 +33,8 @@ namespace TeamHunterBackend.Services
         public IEnumerable<Claim> GetClaimsAccount(Account account)
         {
             var claims = new List<Claim>();
-            claims.Add(new Claim(ClaimTypes.Name, account.Username));
-            foreach (var role in account.Roles)
+            claims.Add(new Claim(ClaimTypes.Name, account.Username!));
+            foreach (var role in account.Roles!)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
@@ -42,7 +42,7 @@ namespace TeamHunterBackend.Services
         }
         public Account Login(string username, string password)
         {
-            return _accounts.SingleOrDefault(a => a.Username == username && a.Password == password);
+            return _accounts.SingleOrDefault(a => a.Username == username && a.Password == password)!;
         }
     }
 }

@@ -4,15 +4,13 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace TeamHunterBackend.Schemas
 {
-    public class Chat
-    {
+    public class Counter{
         [BsonId]
         [Key]
-        [BsonRepresentation(BsonType.Int64)]
+        [BsonRepresentation(BsonType.String)]
         [BsonElement("_id")]
-        public int ChatId { get; set; }
-
-        [BsonElement("chatMessages")]
-        public int[]? ChatMessages { get; set; }
+        public string CounterName { get; set; } = string.Empty;
+        [BsonElement("count")]
+        public int Count { get; set; }
     }
 }

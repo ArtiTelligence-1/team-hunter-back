@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -13,9 +14,14 @@ namespace TeamHunterBackend.Controllers
     public class EventTagController : ControllerBase
     {
         private readonly EventTagService _eventTagService;
+        private readonly IGenerateIDService _generateID;
 
-    public EventTagController(EventTagService eventTagService) =>
+    public EventTagController(EventTagService eventTagService, IGenerateIDService generateID)
+    {
         _eventTagService = eventTagService;
+        _generateID = generateID;
+    }
+        
 
     [Authorize]
     [HttpGet("getEventTags")]
@@ -40,6 +46,7 @@ namespace TeamHunterBackend.Controllers
     [HttpPost("CreateEventTag")]
     public async Task<IActionResult> CreateEventTag(EventTag newEventTag)
     {
+        newEventTag.EventTagId = _generateID.GenerateID("eventTag_id");
         await _eventTagService.CreateEventTag(newEventTag);
 
         return CreatedAtAction(nameof(GetEventTagById), new { Id = newEventTag.EventTagId }, newEventTag);

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -13,9 +14,13 @@ namespace TeamHunterBackend.Controllers
     public class MessageController : ControllerBase
     {
         private readonly EventMessageService _messageService;
+        private readonly IGenerateIDService _generateID;
 
-    public MessageController(EventMessageService messageService) =>
+    public MessageController(EventMessageService messageService, IGenerateIDService generateID)
+    {
         _messageService = messageService;
+        _generateID = generateID;
+    }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("getMessages")]
@@ -40,6 +45,7 @@ namespace TeamHunterBackend.Controllers
     [HttpPost("CreateMessage")]
     public async Task<IActionResult> CreateMessage(Message newMessage)
     {
+        newMessage.MessageId = _generateID.GenerateID("message_id");
         await _messageService.CreateMessage(newMessage);
 
         return CreatedAtAction(nameof(GetMessageById), new { Id = newMessage.MessageId }, newMessage);

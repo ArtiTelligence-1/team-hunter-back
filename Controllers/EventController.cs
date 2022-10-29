@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -13,9 +14,13 @@ namespace TeamHunterBackend.Controllers
     public class EventController : ControllerBase
     {
         private readonly EventService _eventService;
+        private readonly IGenerateIDService _generateID;
 
-    public EventController(EventService eventService) =>
+    public EventController(EventService eventService, IGenerateIDService generateID)
+    {
         _eventService = eventService;
+        _generateID = generateID;
+    } 
 
     [Authorize(Roles = "Admin")]
     [HttpGet("getEvents")]
@@ -48,6 +53,7 @@ namespace TeamHunterBackend.Controllers
     [HttpPost("CreateEvent")]
     public async Task<IActionResult> CreateEvent(Event newEvent)
     {
+        newEvent.EventId = _generateID.GenerateID("event_id");
         await _eventService.CreateEvent(newEvent);
 
         return CreatedAtAction(nameof(GetEventById), new { Id = newEvent.EventId }, newEvent);

@@ -4,15 +4,18 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace TeamHunterBackend.Schemas
 {
-    public class Chat
+    public class JwtRefreshToken
     {
         [BsonId]
         [Key]
         [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
-        public int ChatId { get; set; }
+	    public int TokenId { get; set; }
 
-        [BsonElement("chatMessages")]
-        public int[]? ChatMessages { get; set; }
+        [BsonElement("user_id")]
+	    public string? UserId { get; set; }
+        
+        [BsonElement("refreshToken")]
+	    public string? RefreshToken { get; set; }
     }
 }

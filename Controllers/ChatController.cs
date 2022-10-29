@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
@@ -13,9 +14,13 @@ namespace TeamHunterBackend.Controllers
     public class ChatController : ControllerBase
     {
         private readonly ChatService _chatService;
+        private readonly IGenerateIDService _generateID;
 
-        public ChatController(ChatService chatService) =>
+        public ChatController(ChatService chatService, IGenerateIDService generateID) 
+        {
             _chatService = chatService;
+            _generateID = generateID;
+        }
 
         [Authorize(Roles = "Admin")]    
         [HttpGet("getChats")]
@@ -40,6 +45,7 @@ namespace TeamHunterBackend.Controllers
         [HttpPost("CreateChat")]
         public async Task<IActionResult> CreateChat(Chat newChat)
         {
+            newChat.ChatId = _generateID.GenerateID("chat_id");
             await _chatService.CreateChat(newChat);
 
             return CreatedAtAction(nameof(GetChatById), new { Id = newChat.ChatId }, newChat);

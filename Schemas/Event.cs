@@ -1,26 +1,15 @@
+using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace TeamHunterBackend.Schemas
 {
-    
-    // "eventId" : "ObjectId",
-    // "title*" : "String",
-    // "kindOfSport*" : "kindOfSportId",
-    // "numOfPeople*" : "Number",
-    // "ageInterval*" : "String('to18', '18to25', '25to', 'everybody')",
-    // "timeOfEvent*" : "String(DateTime)",
-    // "location*" : "String",
-    // "description*" : "String",
-
-    // "currentNumOfPeople" : "Number"
-
     public class Event
     {
         [BsonId]
+        [Key]
         [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
-        [BsonRequired]
         public int EventId { get; set; }
 
         [BsonElement("title")]
