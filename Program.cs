@@ -21,7 +21,9 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:5086",
-                                "https://localhost:7113")
+                                "https://localhost:7113",
+                                "http://localhost:4000",
+                                "https://team-hunter-front-staging.herokuapp.com")
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
         });
