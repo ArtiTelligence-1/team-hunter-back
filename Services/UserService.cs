@@ -29,6 +29,8 @@ namespace TeamHunter.Services
 
         public async Task DeleteUserById(int Id) =>
             await _users.DeleteOneAsync(m => m.UserId == Id);
+
+            
             
     }
 }

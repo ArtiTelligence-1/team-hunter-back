@@ -1,6 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using TeamHunterBackend.DB;
+using TeamHunterBackend.Schemas;
+using TeamHunterBackend.Services;
 using TeamHunter.Interfaces;
 using TeamHunter.Models.DTO;
 using TeamHunter.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -13,6 +18,7 @@ builder.Services.AddSingleton<IDBSessionManagerService, MongoDBSessionManagerSer
 // builder.Services.AddSingleton<UserPhotoService>();
 // builder.Services.AddSingleton<EventService>();
 // builder.Services.AddSingleton<EventTagService>();
+
 
 
 builder.Services.AddControllers();
