@@ -8,9 +8,7 @@ builder.Services.Configure<DBSettings>(builder.Configuration.GetSection("TeamHun
 
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<UserPhotoService>();
-builder.Services.AddSingleton<MessageService>();
-builder.Services.AddSingleton<ChatService>();
-builder.Services.AddSingleton<EventMessageService>();
+builder.Services.AddSingleton<EventService>();
 builder.Services.AddSingleton<EventTagService>();
 
 

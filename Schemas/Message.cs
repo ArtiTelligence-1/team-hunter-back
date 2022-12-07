@@ -5,15 +5,13 @@ namespace TeamHunter.Schemas
 {
     public class Message
     {
-        [BsonId]
-        [BsonElement("_id")]
         [BsonRequired]
-        public long MessageId { get; set; }
-        public int OwnerId { get; set; }
-        [BsonElement("message")]
-        public string? Value { get; set; }
+        public User? Owner { get; set; }
+        public Message? ReplyTo { get; set;}
+        public string? Text { get; set; }
 
         [BsonRepresentation(BsonType.DateTime)]
-        public DateTime MessageTime { get; set; }
+        public DateTime Date { get; set; }
+        public DateTime? Edit { get; set; }
     }
 }

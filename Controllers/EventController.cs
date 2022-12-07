@@ -6,14 +6,14 @@ using TeamHunter.Services;
 namespace TeamHunter.Controllers 
 {
     [ApiController]
-    [Route("events")]
+    [Route("/api/v1/events")]
     [EnableCors("Policy")]
     //[DisableCors]
     public class EventsController : ControllerBase
     {
-        private readonly MessageService _eventService;
+        private readonly EventService _eventService;
 
-    public EventsController(MessageService eventService) =>
+    public EventsController(EventService eventService) =>
         _eventService = eventService;
 
     [HttpGet("")]
@@ -29,15 +29,17 @@ namespace TeamHunter.Controllers
     }
 
     [HttpPost("")]
-    public async Task<IActionResult> CreateEvent(Event newEvent)
+    public async Task<Event> CreateEvent(EventUpdate newEvent)
     {
-        await _eventService.CreateEvent(newEvent);
+        // try:
+            Event createdEvent = await _eventService.CreateEvent(newEvent);
+        // catch
 
-        return CreatedAtAction(nameof(GetEventById), new { Id = newEvent.Id }, newEvent);
+        return createdEvent;
     }
 
     [HttpGet("{Id}")]
-    public async Task<ActionResult<Event>> GetEventById(int Id)
+    public async Task<ActionResult<Event>> GetEventById(string Id)
     {
         var _event = await _eventService.GetEventById(Id);
 
@@ -48,7 +50,7 @@ namespace TeamHunter.Controllers
     }
 
     [HttpPut("{Id}")]
-    public async Task<IActionResult> UpdateEvent(int Id, Event updatedEvent) 
+    public async Task<IActionResult> UpdateEvent(string Id, EventUpdate updatedEvent) 
     {
         var _event = await _eventService.GetEventById(Id);
 
@@ -57,15 +59,13 @@ namespace TeamHunter.Controllers
             return NotFound();
         }
 
-        updatedEvent.Id = _event.Id;
-
         await _eventService.UpdateEvent(Id, updatedEvent);
 
         return NoContent();
     }
 
     [HttpDelete("{Id}")]
-    public async Task<IActionResult> DeleteEvent(int Id)
+    public async Task<IActionResult> DeleteEvent(string Id)
     {
         var _event = await _eventService.GetEventById(Id);
 
