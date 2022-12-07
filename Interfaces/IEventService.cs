@@ -15,6 +15,7 @@ public interface IEventService
     Task<Event> ModifyEvent(string eventId, EventUpdate eventUpdate);
     Task JoinEvent(string eventId, User participant);
     Task LeaveEvent(string eventId, User participant);
+    Task<Discussion> LoadComments(string eventId);
     Task<Reply> PostComment(string eventId, User participant, string text, DateTime? replyToCommentId);
     Task DeleteComment(string eventId, DateTime commentId);
     
