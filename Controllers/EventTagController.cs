@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunterBackend.Schemas;
-using TeamHunterBackend.Services;
+using TeamHunter.Schemas;
+using TeamHunter.Services;
 
-namespace TeamHunterBackend.Controllers 
+namespace TeamHunter.Controllers 
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/api/v1/[controller]")]
     [EnableCors("Policy")]
     //[DisableCors]
     public class EventTagController : ControllerBase

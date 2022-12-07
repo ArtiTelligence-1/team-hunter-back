@@ -2,18 +2,22 @@ using Microsoft.AspNetCore.Identity;
 using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
+using TeamHunter.Interfaces;
+using TeamHunter.Models.DTO;
+using TeamHunter.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
-builder.Services.Configure<DBSettings>(builder.Configuration.GetSection("TeamHunterDBSettings"));
+// builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("DatabaseSettings"));
 
-builder.Services.AddSingleton<UserService>();
-builder.Services.AddSingleton<UserPhotoService>();
-builder.Services.AddSingleton<MessageService>();
-builder.Services.AddSingleton<ChatService>();
-builder.Services.AddSingleton<EventMessageService>();
-builder.Services.AddSingleton<EventTagService>();
+builder.Services.AddTransient<IDatabaseConfigService, DatabaseConfigService>();
+builder.Services.AddSingleton<IDBSessionManagerService, MongoDBSessionManagerService>();
+// builder.Services.AddSingleton<UserService>();
+// builder.Services.AddSingleton<UserPhotoService>();
+// builder.Services.AddSingleton<EventService>();
+// builder.Services.AddSingleton<EventTagService>();
 
 
 
@@ -24,7 +28,9 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:5086",
-                                "https://localhost:7113")
+                                "https://localhost:7113",
+                                "http://localhost:4000",
+                                "https://team-hunter-front-staging.herokuapp.com")
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
         });
