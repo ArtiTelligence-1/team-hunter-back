@@ -1,23 +1,31 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunterBackend.Schemas;
-using TeamHunterBackend.Services;
+using TeamHunter.Schemas;
+using TeamHunter.Services;
 
-namespace TeamHunterBackend.Controllers
+namespace TeamHunter.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     [EnableCors("Policy")]
     //[DisableCors]
-    public class UserPhotoController : ControllerBase
+    public class MediaController : ControllerBase
     {
         private readonly UserPhotoService _userPhotoService;
 
-    public UserPhotoController(UserPhotoService userService) =>
+    public MediaController(UserPhotoService userService) =>
         _userPhotoService = userService;
 
-    [HttpGet("GetUserPhoto/{Id}")]
-    public async Task<ActionResult<UserPhoto>> GetUserPhotoById(int Id)
+    [HttpPost("photo")]
+    public async Task<IActionResult> AddPhoto(Photo newUserPhoto)
+    {
+        await _userPhotoService.AddUserPhoto(newUserPhoto);
+
+        return CreatedAtAction(nameof(GetPhoto), new { Id = newUserPhoto.Id }, newUserPhoto);
+    }
+
+    [HttpGet("photo/{Id}")]
+    public async Task<ActionResult<Photo>> GetPhoto(int Id)
     {
         var userPhoto = await _userPhotoService.GetUserPhotoById(Id);
 
@@ -29,16 +37,8 @@ namespace TeamHunterBackend.Controllers
         return userPhoto;
     }
 
-    [HttpPost("AddUserPhoto")]
-    public async Task<IActionResult> AddUserPhoto(UserPhoto newUserPhoto)
-    {
-        await _userPhotoService.AddUserPhoto(newUserPhoto);
-
-        return CreatedAtAction(nameof(GetUserPhotoById), new { Id = newUserPhoto.PhotoId }, newUserPhoto);
-    }
-
-    [HttpPut("UpdateUserPhoto/{Id}")]
-    public async Task<IActionResult> UpdateUserPhotoById(int Id, UserPhoto updatedUserPhoto)
+    [HttpPut("photo/{Id}")]
+    public async Task<IActionResult> UpdateUserPhotoById(int Id, Photo updatedUserPhoto)
     {
         var userPhoto = await _userPhotoService.GetUserPhotoById(Id);
 
@@ -47,14 +47,14 @@ namespace TeamHunterBackend.Controllers
             return NotFound();
         }
 
-        updatedUserPhoto.PhotoId = userPhoto.PhotoId;
+        updatedUserPhoto.Id = userPhoto.Id;
 
         await _userPhotoService.UpdateUserPhotoById(Id, updatedUserPhoto);
 
         return NoContent();
     }
 
-    [HttpDelete("DeleteUserPhoto/{Id}")]
+    [HttpDelete("photo/{Id}")]
     public async Task<IActionResult> DeleteUserPhotoById(int Id)
     {
         var user = await _userPhotoService.GetUserPhotoById(Id);

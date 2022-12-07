@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using TeamHunterBackend.DB;
-using TeamHunterBackend.Schemas;
+using TeamHunter.DB;
+using TeamHunter.Schemas;
+using System.Linq.Expressions;
 
-namespace TeamHunterBackend.Services
+namespace TeamHunter.Services
 {
     public class MessageService
     {
@@ -15,39 +16,26 @@ namespace TeamHunterBackend.Services
             _events = mongoClient.GetDatabase(options.Value.DatabaseName).GetCollection<Event>(options.Value.CollectionName[2]);
         }
 
-        public async Task<List<Event>> GetEvents() => 
-            await _events.Find(_ => true).ToListAsync();
         
         public async Task<Event> GetEventById(int Id) =>
-            await _events.Find(m => m.EventId == Id).FirstOrDefaultAsync();
+            await _events.Find(m => m.Id == Id).FirstOrDefaultAsync();
+        public async Task<List<Event>> GetEvents() => 
+            await _events.Find(_ => true).ToListAsync();
+        public async Task<List<Event>> GetEvents(Expression<Func<Event, bool>> filter) =>
+            await _events.Find(filter).ToListAsync();
+        public async Task<List<Event>> GetEventByType(EventType type) =>
+            await this.GetEvents(e => e.Type == type);
 
-        public async Task<List<Event>> GetEventByTypeOfEvent(int Id) =>
-            await _events.Find(m => m.TypeOfEvent == Id).ToListAsync();
+        public async Task<List<Event>> GetEventByTag(string tagName) =>
+            await this.GetEvents(e => e.Tags.Any(tag => tag.Name == tagName));
 
-        public async Task<List<Event>> GetEventByTag(int Id) 
-        {
-            var _allEvents = await _events.Find(_ => true).ToListAsync();
-            List<Event> result = new List<Event>();
-            foreach (var _event in _allEvents)
-            {
-                foreach (var tag in _event.Tags!)
-                {
-                    if(tag == Id)
-                    {
-                        result.Add(_event);
-                    }
-                }
-            }
-            return result;
-        }
-        
         public async Task CreateEvent(Event newEvent) =>
             await _events.InsertOneAsync(newEvent);
 
         public async Task UpdateEvent(int Id, Event updateEvent) => 
-            await _events.ReplaceOneAsync(m => m.EventId == Id, updateEvent);
+            await _events.ReplaceOneAsync(m => m.Id == Id, updateEvent);
 
         public async Task DeleteEventById(int Id) =>
-            await _events.DeleteOneAsync(m => m.EventId == Id);
+            await _events.DeleteOneAsync(m => m.Id == Id);
     }
 }

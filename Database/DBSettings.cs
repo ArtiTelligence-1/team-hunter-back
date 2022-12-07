@@ -1,4 +1,4 @@
-namespace TeamHunterBackend.DB
+namespace TeamHunter.DB
 {
     public class DBSettings
     {

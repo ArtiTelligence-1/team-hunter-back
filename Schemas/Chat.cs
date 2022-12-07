@@ -1,17 +1,14 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace TeamHunterBackend.Schemas
+namespace TeamHunter.Schemas
 {
     public class Chat
     {
         [BsonId]
-        [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
         [BsonRequired]
-        public int ChatId { get; set; }
-
-        [BsonElement("chatMessages")]
+        public long ChatId { get; set; }
         public int[]? ChatMessages { get; set; }
     }
 }

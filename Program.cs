@@ -1,5 +1,5 @@
-using TeamHunterBackend.DB;
-using TeamHunterBackend.Services;
+using TeamHunter.DB;
+using TeamHunter.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.

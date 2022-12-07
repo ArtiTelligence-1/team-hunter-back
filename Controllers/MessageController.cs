@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunterBackend.Schemas;
-using TeamHunterBackend.Services;
+using TeamHunter.Schemas;
+using TeamHunter.Services;
 
-namespace TeamHunterBackend.Controllers 
+namespace TeamHunter.Controllers 
 {
     [ApiController]
     [Route("[controller]")]
@@ -20,10 +20,10 @@ namespace TeamHunterBackend.Controllers
     public async Task<List<Message>> GetAllMessages() =>
         await _messageService.GetMessages();
 
-    [HttpGet("getMessage/{Id}")]
-    public async Task<ActionResult<Message>> GetMessageById(int Id)
+    [HttpGet("getMessage/{Event}")]
+    public async Task<ActionResult<Message>> GetMessageByEvent(int Event)
     {
-        var _message = await _messageService.GetMessageById(Id);
+        var _message = await _messageService.GetMessageById(Event);
 
         if (_message is null)
         {
@@ -38,7 +38,7 @@ namespace TeamHunterBackend.Controllers
     {
         await _messageService.CreateMessage(newMessage);
 
-        return CreatedAtAction(nameof(GetMessageById), new { Id = newMessage.MessageId }, newMessage);
+        return CreatedAtAction(nameof(GetMessageByEvent), new { Event = newMessage.MessageId }, newMessage);
     }
 
     [HttpPut("UpdateMessage/{Id}")]

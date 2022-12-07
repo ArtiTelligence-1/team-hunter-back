@@ -1,7 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace TeamHunterBackend.Schemas
+namespace TeamHunter.Schemas
 {
     
     // "eventId" : "ObjectId",
@@ -18,40 +18,21 @@ namespace TeamHunterBackend.Schemas
     public class Event
     {
         [BsonId]
-        [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
         [BsonRequired]
-        public int EventId { get; set; }
-
-        [BsonElement("title")]
-        public string? Title { get; set; }
-
-        [BsonElement("typeOfEvent")]
-        public int TypeOfEvent { get; set; }
-
-        [BsonElement("numOfPeople")]
-        public int NumOfPeople { get; set; }
-
-        [BsonElement("ageInterval")]
-        public string? AgeInterval { get; set; }
-
+        public long Id { get; set; }
+        [BsonRequired]
+        public string Title { get; set; } = String.Empty;
+        public EventType Type { get; set; }
+        public List<EventTag> Tags { get; set; } = new List<EventTag>();
+        public AgeInterval? AgeInterval { get; set; }
         [BsonRepresentation(BsonType.DateTime)]
-        [BsonElement("timeOfEvent")]
-        public DateTime TimeOfEvent { get; set; }
-
-        [BsonElement("location")]
-        public string? Location { get; set; }
-
-        [BsonElement("description")]
+        public DateTime HoldingTime { get; set; }
+        public Location? Location { get; set; }
         public string? Description { get; set; }
-
-        [BsonElement("tags")]
-        public int[]? Tags { get; set; }
-
-        [BsonElement("currentNumOfPeople")]
-        public int CurrentNumOfPeople { get; set; }
-
-        [BsonElement("chatId")]
-        public int ChatId { get; set; }
+        public int ParticipantLimit { get; set; }
+        public List<User> Participants { get; set; } = new List<User>();
+        // public int ChatId { get; set; }
+        public List<Message> Messages { get; set; } = new List<Message>();
     }
 }

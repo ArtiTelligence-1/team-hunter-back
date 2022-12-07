@@ -1,55 +1,53 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunterBackend.Schemas;
-using TeamHunterBackend.Services;
+using TeamHunter.Schemas;
+using TeamHunter.Services;
 
-namespace TeamHunterBackend.Controllers 
+namespace TeamHunter.Controllers 
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("events")]
     [EnableCors("Policy")]
     //[DisableCors]
-    public class EventController : ControllerBase
+    public class EventsController : ControllerBase
     {
         private readonly MessageService _eventService;
 
-    public EventController(MessageService eventService) =>
+    public EventsController(MessageService eventService) =>
         _eventService = eventService;
 
-    [HttpGet("getEvents")]
-    public async Task<List<Event>> GetAllEvents() =>
-        await _eventService.GetEvents();
+    [HttpGet("")]
+    public async Task<List<Event>> FilterEvents(string? eventTag, EventType? eventType) {
+        if (eventType is null && eventTag is null)
+            return await _eventService.GetEvents();
+        else if (eventType is null)
+            return await _eventService.GetEventByTag(eventTag!);
+        else if (eventTag is null)
+            return await _eventService.GetEventByType(eventType ?? 0);
 
-    [HttpGet("getEvent/{Id}")]
+        return await _eventService.GetEvents(e => e.Tags.Any(tag => tag.Name == eventTag!) && e.Type == eventType) ?? new List<Event>();
+    }
+
+    [HttpPost("")]
+    public async Task<IActionResult> CreateEvent(Event newEvent)
+    {
+        await _eventService.CreateEvent(newEvent);
+
+        return CreatedAtAction(nameof(GetEventById), new { Id = newEvent.Id }, newEvent);
+    }
+
+    [HttpGet("{Id}")]
     public async Task<ActionResult<Event>> GetEventById(int Id)
     {
         var _event = await _eventService.GetEventById(Id);
 
         if (_event is null)
-        {
             return NotFound();
-        }
 
-        return _event;
+        return await _eventService.GetEventById(Id);
     }
 
-    [HttpGet("getEventByTypeOfEvent/{Id}")]
-    public async Task<List<Event>> GetEventByTypeOfEvent(int Id) =>
-        await _eventService.GetEventByTypeOfEvent(Id);
-
-    [HttpGet("getEventByTag/{Id}")]
-    public async Task<List<Event>> GetEventByTag(int Id) =>
-        await _eventService.GetEventByTag(Id);
-
-    [HttpPost("CreateEvent")]
-    public async Task<IActionResult> CreateEvent(Event newEvent)
-    {
-        await _eventService.CreateEvent(newEvent);
-
-        return CreatedAtAction(nameof(GetEventById), new { Id = newEvent.EventId }, newEvent);
-    }
-
-    [HttpPut("UpdateEvent/{Id}")]
+    [HttpPut("{Id}")]
     public async Task<IActionResult> UpdateEvent(int Id, Event updatedEvent) 
     {
         var _event = await _eventService.GetEventById(Id);
@@ -59,14 +57,14 @@ namespace TeamHunterBackend.Controllers
             return NotFound();
         }
 
-        updatedEvent.EventId = _event.EventId;
+        updatedEvent.Id = _event.Id;
 
         await _eventService.UpdateEvent(Id, updatedEvent);
 
         return NoContent();
     }
 
-    [HttpDelete("DeleteEvent/{Id}")]
+    [HttpDelete("{Id}")]
     public async Task<IActionResult> DeleteEvent(int Id)
     {
         var _event = await _eventService.GetEventById(Id);

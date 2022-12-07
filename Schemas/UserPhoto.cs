@@ -1,17 +1,16 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace TeamHunterBackend.Schemas
+namespace TeamHunter.Schemas
 {
-    public class UserPhoto
+    public class Photo
     {
         [BsonId]
         [BsonRepresentation(BsonType.Int64)]
         [BsonElement("_id")]
-        public int PhotoId { get; set; }
+        public int Id { get; set; }
 
         [BsonRepresentation(BsonType.Binary)]
-        [BsonElement("Photo")]
-        public byte[]? Photo { get; set; }
+        public byte[]? Data { get; set; }
     }
 }

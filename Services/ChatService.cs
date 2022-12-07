@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using TeamHunterBackend.DB;
-using TeamHunterBackend.Schemas;
+using TeamHunter.DB;
+using TeamHunter.Schemas;
 
-namespace TeamHunterBackend.Services
+namespace TeamHunter.Services
 {
     public class ChatService
     {

@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using TeamHunterBackend.DB;
-using TeamHunterBackend.Schemas;
+using TeamHunter.DB;
+using TeamHunter.Schemas;
 
-namespace TeamHunterBackend.Services
+namespace TeamHunter.Services
 {
     public class EventMessageService
     {
@@ -17,6 +17,9 @@ namespace TeamHunterBackend.Services
 
         public async Task<List<Message>> GetMessages() => 
             await _message.Find(_ => true).ToListAsync();
+
+        // public async Task<List<Message>> GetMessagesByEvent(int eventId) =>
+        //     await _message.FindAsync(m => m.)
         
         public async Task<Message> GetMessageById(int Id) =>
             await _message.Find(m => m.MessageId == Id).FirstOrDefaultAsync();
