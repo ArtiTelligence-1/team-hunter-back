@@ -9,6 +9,8 @@ public class Event
     [BsonElement("_id")]
     public string Id { get; set; } = Convert.ToString(DateTime.Now.Ticks / 10000, 16);
     [BsonRequired]
+    public User? Owner { get; set; }
+    [BsonRequired]
     public string? Title { get; set; }
     [BsonRequired]
     public string? Type { get; set; }
@@ -25,5 +27,5 @@ public class Event
     public string? Description { get; set; }
     public string? PosterUrl { get; set; }
     /// <summary>Up To 10 messages in event chat</summary>
-    public List<Message> Discussion { get; set; } = new List<Message>();
+    public List<Comment> Discussion { get; set; } = new List<Comment>();
 }
