@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using TeamHunterBackend.DB;
+using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,7 @@ builder.Services.AddSingleton<MessageService>();
 builder.Services.AddSingleton<ChatService>();
 builder.Services.AddSingleton<EventMessageService>();
 builder.Services.AddSingleton<EventTagService>();
+
 
 
 builder.Services.AddControllers();
