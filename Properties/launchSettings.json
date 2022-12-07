@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "TeamHunterBackend": {
+    "TeamHunter": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
