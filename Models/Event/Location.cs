@@ -1,4 +1,4 @@
-namespace TeamHunter.Schemas;
+namespace TeamHunter.Models;
 
 public class Location
 {

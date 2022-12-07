@@ -1,9 +1,8 @@
-namespace TeamHunter.Schemas;
+namespace TeamHunter.Models;
 
 public class AgeInterval
 {
     public int From {get; set;}
-    
     private int _to;
     public int To {
         get => _to;
