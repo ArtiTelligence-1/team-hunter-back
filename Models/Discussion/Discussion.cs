@@ -6,5 +6,5 @@ public class Discussion {
     [BsonId]
     [BsonRequired]
     public string? EventId { get; set; }
-    public List<Comment> Messages { get; set; } = new List<Comment>();
+    public List<Comment> Comments { get; set; } = new List<Comment>();
 }

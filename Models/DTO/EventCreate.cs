@@ -6,21 +6,33 @@ public class EventCreate{
     public string? Type { get; set; }
     public int ParticipantsLimit { get; set; }
     public AgeInterval? AgeLimitGap { get; set; }
-    public DateTime HoldingTime { get; set; } = new DateTime((DateTime.Now + new TimeSpan(3,0,0,0)).Ticks);
+    public DateTime? HoldingTime { get; set; }
     public Location? Location { get; set; }
     public string? Description { get; set; }
     public string? PosterUrl { get; set; }
 
+    bool Validate() => 
+        this.Owner is not null &&
+        this.Title is not null &&
+        this.AgeLimitGap is not null &&
+        this.HoldingTime is not null &&
+        this.Location is not null &&
+        this.Description is not null &&
+        this.PosterUrl is not null;
+
     public Event toEvent() =>
-        new Event(){
-            Owner = this.Owner,
-            Title = this.Title,
-            Type = this.Type,
-            ParticipantsLimit = this.ParticipantsLimit,
-            AgeLimitGap = this.AgeLimitGap,
-            HoldingTime = this.HoldingTime,
-            Location = this.Location,
-            Description = this.Description,
-            PosterUrl = this.PosterUrl
-        };
+        this.Validate() ?
+            throw new ArgumentNullException()
+        : 
+            new Event(){
+                Owner = this.Owner,
+                Title = this.Title,
+                Type = this.Type,
+                ParticipantsLimit = this.ParticipantsLimit,
+                AgeLimitGap = this.AgeLimitGap,
+                HoldingTime = this.HoldingTime!.Value,
+                Location = this.Location,
+                Description = this.Description,
+                PosterUrl = this.PosterUrl
+            };
 }

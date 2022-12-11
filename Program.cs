@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using TeamHunterBackend.DB;
 using TeamHunterBackend.Schemas;
-using TeamHunterBackend.Services;
 using TeamHunter.Interfaces;
 using TeamHunter.Models.DTO;
 using TeamHunter.Models;

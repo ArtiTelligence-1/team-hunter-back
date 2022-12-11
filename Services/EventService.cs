@@ -1,56 +1,123 @@
-// using Microsoft.Extensions.Options;
-// using MongoDB.Driver;
-// using TeamHunter.Interfaces;
-// using TeamHunter.Models;
-// using System.Linq.Expressions;
+using TeamHunter.Models;
+using TeamHunter.Models.DTO;
+using System.Linq.Expressions;
+using TeamHunter.Interfaces;
+using MongoDB.Driver;
+using System.Reflection;
 
-// namespace TeamHunter.Services;
+namespace TeamHunter.Models;
 
-// public class EventService
-// {
-//     private readonly IMongoCollection<Event> eventsCollection;
+class EventService : IEventService {
+    private readonly IMongoCollection<Event> eventManager;
+    private readonly IMongoCollection<Discussion> discussionManager;
+    private readonly ISettingsService settingsService;
 
-//     public EventService(IDBSessionManagerService sessionManager)
-//     {
-//         eventsCollection = sessionManager.GetCollection<Event>();
-//     }
+    public EventService(IDBSessionManagerService manager, ISettingsService settingsService){
+        this.eventManager = manager.GetCollection<Event>();
+        this.discussionManager = manager.GetCollection<Discussion>();
+        this.settingsService = settingsService;
+    }
 
+    public async Task<List<Event>> GetEventsAsync() =>
+        await this.GetEventsAsync(e => true);
+    public async Task<List<Event>> GetEventsAsync(Expression<Func<Event, bool>> filter) =>
+        await (await this.eventManager.FindAsync(filter)).ToListAsync();
+    public async Task<Event> GetEventByIdAsync(string eventId) =>
+        (await this.GetEventsAsync(e => e.Id == eventId)).First();
+    public async Task<List<Event>> GetEventsByTypeAsync(string type) =>
+        await this.GetEventsAsync(e => e.Type == type);
+    public async Task<Event> CreateEventAsync(EventCreate eventCreate) {
+        Event eventModel = eventCreate.toEvent();
+
+        await this.eventManager.InsertOneAsync(eventModel);
+        return eventModel;
+    }
+    public async Task DeleteEventAsync(string eventId) =>
+        await this.eventManager.DeleteOneAsync(e => e.Id == eventId);
+    public async Task<Event> ModifyEventAsync(string eventId, EventUpdate eventUpdate) {
+        UpdateDefinitionBuilder<Event> modification = Builders<Event>.Update;
+        Event eventModel = await this.GetEventByIdAsync(eventId);
+        PropertyInfo[] eventUpdateProperties = this.eventManager.GetType().GetProperties();
+        PropertyInfo[] eventProperties = eventModel.GetType().GetProperties();
+
+        foreach(var item in eventUpdate.GetType().GetProperties()){
+            if (item.GetValue(eventUpdate) is not null) {
+                modification.AddToSet(item.Name, item.GetValue(eventUpdate));
+
+                eventProperties.First(prop => prop.Name == item.Name)
+                    .SetValue(eventModel, item.GetValue(eventUpdate));
+            }
+        }
     
-//     public async Task<Event> GetEventById(string Id) =>
-//         await eventsCollection.Find(m => m.Id == Id).FirstOrDefaultAsync();
-//     public async Task<List<Event>> GetEvents() => 
-//         await eventsCollection.Find(_ => true).ToListAsync();
-//     public async Task<List<Event>> GetEvents(Expression<Func<Event, bool>> filter) =>
-//         await eventsCollection.Find(filter).ToListAsync();
-//     public async Task<List<Event>> GetEventByType(string type) =>
-//         await this.GetEvents(e => e.Type == type);
-//     public async Task SendMessage(string eventId, Comment message) {
-//         Event currentEvent = await this.GetEventById(eventId);
-//         currentEvent.Discussion.Append(message);
+        await this.eventManager.FindOneAndUpdateAsync(u => u.Id == eventId, modification.Combine());
+        return eventModel;
+    }
+    public async Task<bool> JoinEventAsync(string eventId, User participant) {
+        Event eventModel = await this.GetEventByIdAsync(eventId);
+        if (!eventModel.Participants.Contains(participant)) {
+            eventModel.Participants.Add(participant);
+            UpdateDefinition<Event> update = Builders<Event>.Update.Set("Participants", eventModel.Participants);
 
-//         await this.UpdateEvent(currentEvent.Id!, EventUpdate.fromEvent(currentEvent));
-//     }
+            await this.eventManager.UpdateOneAsync(e => e.Id == eventId, update);
+            return true;
+        }
+        return false;
+    }
+    public async Task<bool> LeaveEventAsync(string eventId, User participant) {
+        Event eventModel = await this.GetEventByIdAsync(eventId);
+        if (eventModel.Participants.Contains(participant)) {
+            eventModel.Participants.RemoveAt(eventModel.Participants.FindIndex(u => u.Id == participant.Id));
+            UpdateDefinition<Event> update = Builders<Event>.Update.Set("Participants", eventModel.Participants);
 
-//     public async Task EditMessage(string eventId, DateTime indentifier, string new_message){
-//         Event currentEvent = await this.GetEventById(eventId);
-//         Comment msg = currentEvent.Discussion.Single(m => m.Date == indentifier);
-//         msg.Text = new_message;
-//         msg.Edit = DateTime.Now;
+            await this.eventManager.UpdateOneAsync(e => e.Id == eventId, update);
+            return true;
+        }
+        return false;
+    }
+    public async Task<Discussion> LoadCommentsAsync(string eventId) =>
+        (await this.discussionManager.FindAsync(d => d.EventId == eventId)).First();
+    public async Task<Comment> PostCommentAsync(string eventId, User participant, string text, DateTime? replyToCommentId) {
+        Discussion discussion = await this.LoadCommentsAsync(eventId);
+        Comment newComment = new Comment() {
+            Sender = participant,
+            Text = text,
+            ReplyTo = replyToCommentId
+        };
+        if (replyToCommentId is not null)
+            discussion.Comments.Find(c => c.Id == replyToCommentId)!.Replies.Add(newComment.Id);
 
-        
-//     }
+        discussion.Comments.Add(newComment);
+        UpdateDefinition<Discussion> update = Builders<Discussion>.Update.Set("Messages", discussion.Comments);
+        await this.discussionManager.UpdateOneAsync(d => d.EventId == eventId, update);
+        await this.SyncEventWithDiscussionAsync(discussion);
+        return newComment;
+    }
+    public async Task DeleteCommentAsync(string eventId, DateTime commentId) {
+        Discussion discussion = await this.LoadCommentsAsync(eventId);
+        int commentIndex = discussion.Comments.FindIndex(c => c.Id == commentId);
+        List<Comment> commentsToDelete = new List<Comment>();
 
-//     public async Task<Event> CreateEvent(EventUpdate createEventData) {
-//         Event newEvent = createEventData.toEvent();
-//         await eventsCollection.InsertOneAsync(newEvent);
-//         return newEvent;
-//     }
+        if(discussion.Comments[commentIndex].ReplyTo is not null)
+            discussion.Comments.Find(c => c.Id == commentId);
 
-//     // 
-//     public async Task UpdateEvent(string eventId, EventUpdate update) {
-//         // await _events.ReplaceOneAsync(m => m.Id == Id, updateEvent);
-//     }
+        Queue<Comment> commentFetcher = new Queue<Comment>();
+        commentFetcher.Enqueue(discussion.Comments[commentIndex]);
+        while(commentFetcher.Count() != 0){
+            foreach(var comment in commentFetcher)
+                commentFetcher.Enqueue(comment);
+            commentsToDelete.Add(commentFetcher.Dequeue());
+        }
+        FilterDefinition<Discussion> filter = Builders<Discussion>.Filter.AnyEq("Comments", commentsToDelete);
+        await this.discussionManager.DeleteManyAsync(filter);
+    }
 
-//     public async Task DeleteEventById(string Id) =>
-//         await eventsCollection.DeleteOneAsync(m => m.Id == Id);
-// }
+    public async Task SyncEventWithDiscussionAsync(Discussion discussion) {
+        Event eventModel = await this.GetEventByIdAsync(discussion.EventId!);
+
+        if (eventModel.Discussion != discussion.Comments.Take((int)this.settingsService.MessageRepliesLimit)) {
+            eventModel.Discussion = discussion.Comments.Take((int)this.settingsService.MessageRepliesLimit).ToList();
+            UpdateDefinition<Event> update = Builders<Event>.Update.Set("Discussion", eventModel.Discussion);
+            await this.eventManager.UpdateOneAsync(e => e.Id == discussion.EventId, update);
+        }
+    }
+}

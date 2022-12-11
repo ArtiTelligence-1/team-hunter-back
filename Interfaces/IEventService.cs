@@ -6,17 +6,17 @@ namespace TeamHunter.Interfaces;
 
 public interface IEventService
 {
-    Task<List<Event>> GetEvents();
-    Task<List<Event>> GetEvents(Expression<Func<Event, bool>> filter);
-    Task<Event> GetEventById(string eventId);
-    Task<Event> GetEventByType(string type);
-    Task<Event> CreateEvent(EventCreate eventCreate);
-    Task<Event> DeleteEvent(string eventId);
-    Task<Event> ModifyEvent(string eventId, EventUpdate eventUpdate);
-    Task JoinEvent(string eventId, User participant);
-    Task LeaveEvent(string eventId, User participant);
-    Task<Discussion> LoadComments(string eventId);
-    Task<Reply> PostComment(string eventId, User participant, string text, DateTime? replyToCommentId);
-    Task DeleteComment(string eventId, DateTime commentId);
+    Task<List<Event>> GetEventsAsync();
+    Task<List<Event>> GetEventsAsync(Expression<Func<Event, bool>> filter);
+    Task<Event> GetEventByIdAsync(string eventId);
+    Task<List<Event>> GetEventsByTypeAsync(string type);
+    Task<Event> CreateEventAsync(EventCreate eventCreate);
+    Task DeleteEventAsync(string eventId);
+    Task<Event> ModifyEventAsync(string eventId, EventUpdate eventUpdate);
+    Task<bool> JoinEventAsync(string eventId, User participant);
+    Task<bool> LeaveEventAsync(string eventId, User participant);
+    Task<Discussion> LoadCommentsAsync(string eventId);
+    Task<Comment> PostCommentAsync(string eventId, User participant, string text, DateTime? replyToCommentDate);
+    Task DeleteCommentAsync(string eventId, DateTime commentId);
     
 }
