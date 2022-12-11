@@ -10,18 +10,23 @@ public class SettingsManagerService : ISettingsManagerService
 {
     private readonly IMongoCollection<Setting> settingsManager;
     private readonly ISettingsService localData;
+    private Dictionary<string, IEnumerable<string>> settingsCache;
 
     public SettingsManagerService(IDBSessionManagerService manager, IOptions<SettingParams> localData) {
         this.settingsManager = manager.GetCollection<Setting>();
         this.localData = localData.Value;
+        this.settingsCache = new Dictionary<string, IEnumerable<string>>();
     }
 
     public async Task<IEnumerable<string>> GetMultipleAsync(string key) {
         try{
+            if (this.settingsCache.ContainsKey(key))
+                return this.settingsCache[key];
             var value = (await this.settingsManager.FindAsync(s => s.Key == key)).First().Value;
             if (value.Count() == 0)
                 throw new NullReferenceException();
 
+            this.settingsCache[key] = value;
             return value;
         } 
         catch(Exception e)//when (e is NullReferenceException || e is AggregateException)
@@ -52,6 +57,7 @@ public class SettingsManagerService : ISettingsManagerService
     public async Task SetValueAsync(string key, IEnumerable<string> values) {
         UpdateDefinition<Setting> update = Builders<Setting>.Update.Set("Value", values);
 
+        this.settingsCache[key] = values;
         await this.settingsManager.UpdateOneAsync(s => s.Key == key, update);
     }
 }
