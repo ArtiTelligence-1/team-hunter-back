@@ -1,13 +1,14 @@
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 
 namespace TeamHunter.Models;
 
-public class Options {
+public class Setting {
     [BsonId]
     [BsonIgnoreIfNull]
     [BsonElement("_id")]
-    public string? Id { get; set; }
+    public ObjectId? Id { get; set; }
     [BsonRequired]
     public string? Key { get; set; }
-    public List<string> Value { get; set; } = new List<string>();
+    public IEnumerable<string> Value { get; set; } = new List<string>();
 }

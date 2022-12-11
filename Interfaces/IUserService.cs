@@ -1,16 +1,18 @@
 using TeamHunter.Models;
 using TeamHunter.Models.DTO;
 
+using System.Net;
+
 namespace TeamHunter.Interfaces;
 
 public interface IUserService
 {
-    Task<UserShortInfo> CreateUser(UserCreate userCreate);
-    Task<User> GetUserById(string userId);
-    Task<User> ModifyUser(string userId, UserCreate userModify);
-    Task DeleteUser(string userId);
-    Task<SessionInfo> CreateSession(string userId);
-    Task DeleteSession(string userId, string sessionId);
+    Task<UserShortInfo> CreateUserAwait(UserCreate userCreate);
+    Task<User> GetUserByIdAsync(string userId);
+    Task<User> ModifyUserAwait(string userId, UserCreate userModify);
+    Task DeleteUserAsync(string userId);
+    Task<SessionInfo> CreateSessionAsync(string userId, IPAddress ipAddress, string userAgent);
+    Task DeleteSessionAsync(string userId, string sessionId);
 
 
 }
