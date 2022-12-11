@@ -4,16 +4,23 @@ using TeamHunterBackend.Schemas;
 using TeamHunterBackend.Services;
 using TeamHunter.Interfaces;
 using TeamHunter.Models.DTO;
+using TeamHunter.Models;
 using TeamHunter.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
-// builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("DatabaseSettings"));
+builder.Services.Configure<SettingParams>(builder.Configuration.GetSection("SiteSettingsInit"));
 
 builder.Services.AddTransient<IDatabaseConfigService, DatabaseConfigService>();
 builder.Services.AddSingleton<IDBSessionManagerService, MongoDBSessionManagerService>();
+// builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddSingleton<ISettingsManagerService, SettingsManagerService>();
+builder.Services.AddSingleton<ISettingsService, SettingsService>();
+builder.Services.AddSingleton<IUserService, UserService>();
+
+
 // builder.Services.AddSingleton<UserService>();
 // builder.Services.AddSingleton<UserPhotoService>();
 // builder.Services.AddSingleton<EventService>();
