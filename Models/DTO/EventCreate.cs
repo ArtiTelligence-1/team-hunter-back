@@ -1,7 +1,7 @@
 namespace TeamHunter.Models.DTO;
 
-public class EventCreate{
-    public User? Owner { get; set; }
+public class EventCreate {
+    // public User? Owner { get; set; }
     public string? Title { get; set; }
     public string? Type { get; set; }
     public int ParticipantsLimit { get; set; }
@@ -12,7 +12,7 @@ public class EventCreate{
     public string? PosterUrl { get; set; }
 
     bool Validate() => 
-        this.Owner is not null &&
+        // this.Owner is not null &&
         this.Title is not null &&
         this.AgeLimitGap is not null &&
         this.HoldingTime is not null &&
@@ -25,7 +25,6 @@ public class EventCreate{
             throw new ArgumentNullException()
         : 
             new Event(){
-                Owner = this.Owner,
                 Title = this.Title,
                 Type = this.Type,
                 ParticipantsLimit = this.ParticipantsLimit,

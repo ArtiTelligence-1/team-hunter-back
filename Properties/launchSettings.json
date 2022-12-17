@@ -16,7 +16,12 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7113;http://localhost:5086",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATABASE_USERNAME": "daminik",
+        "DATABASE_PASSWORD": "s5Mow6GVOjbCglnU",
+        "DATABASE_URL": "teamhuntercluster.umpns4z.mongodb.net",
+        "DATABASE_NAME": "TeamHunterDB",
+        "TELEGRAM_BOT_TOKEN": "1964231384:AAFjZA1aEyAWUQKDfnWDo3Z6_1lmP3lQzT0"
       }
     },
     "IIS Express": {

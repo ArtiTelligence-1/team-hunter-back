@@ -10,7 +10,7 @@ public interface IEventService
     Task<List<Event>> GetEventsAsync(Expression<Func<Event, bool>> filter);
     Task<Event> GetEventByIdAsync(string eventId);
     Task<List<Event>> GetEventsByTypeAsync(string type);
-    Task<Event> CreateEventAsync(EventCreate eventCreate);
+    Task<Event> CreateEventAsync(User owner, EventCreate eventCreate);
     Task DeleteEventAsync(string eventId);
     Task<Event> ModifyEventAsync(string eventId, EventUpdate eventUpdate);
     Task<bool> JoinEventAsync(string eventId, User participant);

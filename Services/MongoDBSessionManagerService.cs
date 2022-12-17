@@ -7,10 +7,10 @@ namespace TeamHunter.Services;
 
 public class MongoDBSessionManagerService : IDBSessionManagerService {
     private IMongoClient databaseClient;
-    private IDatabaseConfigService databaseConfig;
-    public MongoDBSessionManagerService(IDatabaseConfigService databaseConfig){
+    private ICredentialsService databaseConfig;
+    public MongoDBSessionManagerService(ICredentialsService databaseConfig){
         this.databaseConfig = databaseConfig;
-        databaseClient = new MongoClient(this.databaseConfig.ConnectionString);
+        databaseClient = new MongoClient(this.databaseConfig.DatabaseConnectionString);
     }
 
     public IMongoCollection<T> GetCollection<T>() =>

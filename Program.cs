@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<SettingParams>(builder.Configuration.GetSection("SiteSettingsInit"));
 
-builder.Services.AddTransient<IDatabaseConfigService, DatabaseConfigService>();
+builder.Services.AddTransient<ICredentialsService, CerdentialsService>();
 builder.Services.AddSingleton<IDBSessionManagerService, MongoDBSessionManagerService>();
-// builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddSingleton<IEventService, EventService>();
 builder.Services.AddSingleton<ISettingsManagerService, SettingsManagerService>();
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<IUserService, UserService>();
@@ -35,6 +35,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("http://localhost:5086",
                                 "https://localhost:7113",
                                 "http://localhost:4000",
+                                "http://localhost:5050",
                                 "https://team-hunter-front-staging.herokuapp.com")
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
@@ -58,7 +59,7 @@ if (app.Environment.IsDevelopment())
         });
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseCors();
 

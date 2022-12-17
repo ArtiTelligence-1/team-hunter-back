@@ -1,9 +1,12 @@
 using System.Net;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace TeamHunter.Models;
 
 public class SessionInfo {
+    [BsonId]
+    [BsonElement("_id")]
     public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
     public IPAddress? IPAddress { get; set; }
     public string? Agent { get; set; }

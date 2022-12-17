@@ -26,8 +26,9 @@ class EventService : IEventService {
         (await this.GetEventsAsync(e => e.Id == eventId)).First();
     public async Task<List<Event>> GetEventsByTypeAsync(string type) =>
         await this.GetEventsAsync(e => e.Type == type);
-    public async Task<Event> CreateEventAsync(EventCreate eventCreate) {
+    public async Task<Event> CreateEventAsync(User owner, EventCreate eventCreate) {
         Event eventModel = eventCreate.toEvent();
+        eventModel.Owner = owner.Id;
 
         await this.eventManager.InsertOneAsync(eventModel);
         return eventModel;

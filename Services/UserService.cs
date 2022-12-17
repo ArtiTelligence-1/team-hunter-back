@@ -16,7 +16,7 @@ public class UserService : IUserService
         userManager = manager.GetCollection<User>();
     }
 
-    public async Task<UserShortInfo> CreateUserAwait(UserCreate userCreate) {
+    public async Task<UserShortInfo> CreateUserAsync(UserCreate userCreate) {
         User user = userCreate.ToUser();
         user.Id = ObjectId.GenerateNewId();
 
@@ -30,12 +30,15 @@ public class UserService : IUserService
         return await userManager.FindAsync(user => user.Id == userObjectId);
     }
 
-    public async Task<User> GetUserByIdAsync(string userId) =>
+    public async Task<User?> GetUserByIdAsync(string userId) =>
         (await this.GetUserCursorById(userId)).FirstOrDefault();
 
-    public async Task<User> ModifyUserAwait(string userId, UserCreate userModify) {
+    public async Task<User?> GetUserByTelegramIdAsync(long userTelegramId) =>
+        (await userManager.FindAsync(user => user.TelegramId == userTelegramId)).FirstOrDefault();
+
+    public async Task<User> ModifyUserAsync(string userId, UserCreate userModify) {
         UpdateDefinitionBuilder<User> modification = Builders<User>.Update;
-        User user = await this.GetUserByIdAsync(userId);
+        User user = (await this.GetUserByIdAsync(userId))!;
         PropertyInfo[] userModifyProperties = userModify.GetType().GetProperties();
         PropertyInfo[] userProperties = user.GetType().GetProperties();
 
@@ -57,7 +60,7 @@ public class UserService : IUserService
         await this.userManager.DeleteOneAsync(u => u.Id == userObjectId);
     }
     public async Task<SessionInfo> CreateSessionAsync(string userId, IPAddress ipAddress, string userAgent) {
-        User user = await this.GetUserByIdAsync(userId);
+        User user = (await this.GetUserByIdAsync(userId))!;
         SessionInfo session = new SessionInfo(){
             IPAddress = ipAddress,
             Agent = userAgent
@@ -68,8 +71,9 @@ public class UserService : IUserService
         await this.userManager.UpdateOneAsync(u => u.Id == user.Id, update);
         return session;
     }
+
     public async Task DeleteSessionAsync(string userId, string sessionId) {
-        User user = await this.GetUserByIdAsync(userId);
+        User user = (await this.GetUserByIdAsync(userId))!;
         ObjectId sessionObjectId = new ObjectId(sessionId);
         
         user.ActiveSessions.RemoveAt(user.ActiveSessions.FindIndex(s => s.Id == sessionObjectId));

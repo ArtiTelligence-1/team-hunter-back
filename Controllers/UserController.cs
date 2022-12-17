@@ -1,87 +1,105 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunter.Schemas;
-using TeamHunter.Services;
+using TeamHunter.Interfaces;
+using TeamHunter.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using System.Text;
+using TeamHunterBackend.Schemas;
+using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
+using TeamHunter.Models;
 
-namespace TeamHunter.Controllers 
-{
-    [ApiController]
-    [Route("[controller]")]
-    [EnableCors("Policy")]
-    //[DisableCors]
-    public class UserController : ControllerBase
-    {
-        private readonly UserService _userService;
+namespace TeamHunter.Controllers;
 
-    public UserController(UserService userService) =>
-        _userService = userService;
+[Route("/api/v1/user")]
+[ApiController]
+public class UserController: ControllerBase {
+    private readonly IUserService _userManger;
+    private readonly ICredentialsService _credentialsManager;
+
+    public UserController(IUserService userService, ICredentialsService applicationCredentialsService){
+        _userManger = userService;
+        _credentialsManager = applicationCredentialsService;
+    }
+
+    [HttpPost("oauth/telegram")]
+    public async Task<IActionResult> TelegrmOauth(TelegramOauthModel authModel){
+        string dataStr = $"auth_date={authModel.auth_date}\nfirst_name={authModel.first_name}\nid={authModel.id}username={authModel.username}";
+        // byte[] signature = _hmac.ComputeHash(Encoding.UTF8.GetBytes(dataStringBuilder.ToString()));
+
+        var secretKey = ShaHash(_credentialsManager.TelegramBotToken);
+        var authHash = HashHmac(secretKey, Encoding.UTF8.GetBytes(dataStr));
+        var secondsNow = DateTimeOffset.Now.ToUnixTimeSeconds(); 
+
+
+        if (secondsNow - authModel.auth_date > 24 * 60 * 60) {
+            return BadRequest(new { code = Response.StatusCode, message = ""});
+        }
         
-    // [Route("/")]
-    // [HttpGet]
-    // public string MainPage()
-    // {
-    //     return "Hello World!";
-    // }
-    //[EnableCors("Policy")]
-    [HttpGet("getUsers")]
-    public async Task<List<User>> GetAllUsers() =>
-        await _userService.GetUsers();
-
-    //[EnableCors("Policy")]
-    [HttpGet("getUser/{Id}")]
-    public async Task<ActionResult<User>> GetUserById(int Id)
-    {
-        var user = await _userService.GetUserById(Id);
-
-        if (user is null)
+        var myHashStr = String.Concat(authHash.Select(i => i.ToString("x2")));
+        Console.WriteLine(myHashStr);
+        if (myHashStr == authModel.hash)
         {
-            return NotFound();
+            UserShortInfo? user = await _userManger.GetUserByTelegramIdAsync(authModel.id);
+
+            if (user == null)
+            {
+                user = await _userManger.CreateUserAsync(new UserCreate {
+                    TelegramId = authModel.id,
+                    FirstName = authModel.first_name,
+                    LastName = authModel.last_name,
+                    PhotoUrl = authModel.photo_url
+                });
+            //     var newUser = new User{UserId = authModel.id, Name = authModel.first_name};
+            //     await _userManger.CreateUser(newUser);
+            //     user = _userManger.GetUserById(newUser.UserId);
+            }
+            
+
+
+            return Ok(user == null);
         }
-
-        return user;
+        return BadRequest("hash error");
     }
 
-    //[EnableCors("Policy")]
-    [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser(User newUser)
-    {
-        await _userService.CreateUser(newUser);
-
-        return CreatedAtAction(nameof(GetUserById), new { Id = newUser.UserId }, newUser);
+    private  byte[] ShaHash(String value) { 
+        using (var hasher = SHA256.Create()) 
+        
+        { return hasher.ComputeHash(Encoding.UTF8.GetBytes(value)); } 
     }
 
-    [HttpPut("UpdateUser/{Id}")]
-    public async Task<IActionResult> UpdateUser(int Id, User updatedUser)
+    private  byte[] HashHmac(byte[] key, byte[] message)
     {
-        var user = await _userService.GetUserById(Id);
+        var hash = new HMACSHA256(key);
+        return hash.ComputeHash(message);
+    }
 
-        if (user is null)
+    private string GenerateToken(int userId)
+    {
+        var mySecret = "asdv234234^&%&^%&^hjsdfb2%%%";
+        var mySecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(mySecret));
+
+        var myIssuer = "http://mysite.com";
+        var myAudience = "http://myaudience.com";
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            return NotFound();
-        }
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            Issuer = myIssuer,
+            Audience = myAudience,
+            SigningCredentials = new SigningCredentials(mySecurityKey, SecurityAlgorithms.HmacSha256Signature)
+        };
 
-        updatedUser.UserId = user.UserId;
-
-        await _userService.UpdateUser(Id, updatedUser);
-
-        return NoContent();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
-
-    [HttpDelete("DeleteUser/{Id}")]
-    public async Task<IActionResult> DeleteUser(int Id)
-    {
-        var user = await _userService.GetUserById(Id);
-
-        if (user is null)
-        {
-            return NotFound();
-        }
-
-        await _userService.DeleteUserById(Id);
-
-        return NoContent();
-    }
-
-    }
-    
 }

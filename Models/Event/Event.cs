@@ -9,7 +9,7 @@ public class Event
     [BsonElement("_id")]
     public string Id { get; set; } = Convert.ToString(DateTime.Now.Ticks / 10000, 16);
     [BsonRequired]
-    public User? Owner { get; set; }
+    public ObjectId? Owner { get; set; }
     [BsonRequired]
     public string? Title { get; set; }
     [BsonRequired]

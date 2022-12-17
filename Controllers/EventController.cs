@@ -1,38 +1,45 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using TeamHunter.Schemas;
+using TeamHunter.Models;
+using TeamHunter.Models.DTO;
 using TeamHunter.Services;
-
-namespace TeamHunter.Controllers 
+using TeamHunter.Interfaces;
+using System.Web;
+namespace TeamHunter.Controllers ;
+[ApiController]
+[Route("/api/v1/events")]
+[EnableCors("Policy")]
+//[DisableCors]
+public class EventsController : ControllerBase
 {
-    [ApiController]
-    [Route("/api/v1/events")]
-    [EnableCors("Policy")]
-    //[DisableCors]
-    public class EventsController : ControllerBase
-    {
-        private readonly EventService _eventService;
+    private IEventService _eventManager;
+    private ISettingsService settings;
 
-    public EventsController(EventService eventService) =>
-        _eventService = eventService;
+    public EventsController(ISettingsService settings, IEventService eventManager) {
+        this.settings = settings;
+        this._eventManager = eventManager;
+    }
 
     [HttpGet("")]
-    public async Task<List<Event>> FilterEvents(string? eventTag, EventType? eventType) {
-        if (eventType is null && eventTag is null)
-            return await _eventService.GetEvents();
-        else if (eventType is null)
-            return await _eventService.GetEventByTag(eventTag!);
-        else if (eventTag is null)
-            return await _eventService.GetEventByType(eventType ?? 0);
+    public async Task<List<Event>> GetAllEvents(string? eventType) {
+        var events = await _eventManager.GetEventsAsync();
+        
+        Console.WriteLine(settings.EventTypes.Count());
+        Console.WriteLine(settings.MessageRepliesLimit);
 
-        return await _eventService.GetEvents(e => e.Tags.Any(tag => tag.Name == eventTag!) && e.Type == eventType) ?? new List<Event>();
+        if (eventType is null)
+            return await _eventManager.GetEventsAsync();
+        else if (eventType is not null)
+            return await _eventManager.GetEventsByTypeAsync(eventType);
+
+        return await _eventManager.GetEventsAsync(e => e.Type == eventType) ?? new List<Event>();
     }
 
     [HttpPost("")]
-    public async Task<Event> CreateEvent(EventUpdate newEvent)
+    public async Task<Event> CreateEvent(EventCreate newEvent)
     {
         // try:
-            Event createdEvent = await _eventService.CreateEvent(newEvent);
+            Event createdEvent = await _eventManager.CreateEventAsync(new User(), newEvent);
         // catch
 
         return createdEvent;
@@ -41,25 +48,25 @@ namespace TeamHunter.Controllers
     [HttpGet("{Id}")]
     public async Task<ActionResult<Event>> GetEventById(string Id)
     {
-        var _event = await _eventService.GetEventById(Id);
+        var _event = await _eventManager.GetEventByIdAsync(Id);
 
         if (_event is null)
             return NotFound();
 
-        return await _eventService.GetEventById(Id);
+        return await _eventManager.GetEventByIdAsync(Id);
     }
 
     [HttpPut("{Id}")]
     public async Task<IActionResult> UpdateEvent(string Id, EventUpdate updatedEvent) 
     {
-        var _event = await _eventService.GetEventById(Id);
+        var _event = await _eventManager.GetEventByIdAsync(Id);
 
         if (_event is null)
         {
             return NotFound();
         }
 
-        await _eventService.UpdateEvent(Id, updatedEvent);
+        await _eventManager.ModifyEventAsync(Id, updatedEvent);
 
         return NoContent();
     }
@@ -67,18 +74,15 @@ namespace TeamHunter.Controllers
     [HttpDelete("{Id}")]
     public async Task<IActionResult> DeleteEvent(string Id)
     {
-        var _event = await _eventService.GetEventById(Id);
+        var _event = await _eventManager.GetEventByIdAsync(Id);
 
         if (_event is null)
         {
             return NotFound();
         }
 
-        await _eventService.DeleteEventById(Id);
+        await _eventManager.DeleteEventAsync(Id);
 
         return NoContent();
     }
-
-    }
-
 }

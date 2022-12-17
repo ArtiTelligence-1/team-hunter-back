@@ -1,6 +1,6 @@
 // using Microsoft.AspNetCore.Cors;
 // using Microsoft.AspNetCore.Mvc;
-// using TeamHunter.Schemas;
+// using TeamHunter.Models;
 // using TeamHunter.Services;
 
 // namespace TeamHunter.Controllers 
