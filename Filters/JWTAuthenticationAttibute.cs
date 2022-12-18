@@ -18,6 +18,7 @@ namespace WebApi.Jwt.Filters
         {
             var request = context.Request;
             var authorization = request.Headers.Authorization;
+            Console.WriteLine(request);
 
             if (authorization == null || authorization.Scheme != "Bearer")
                 return;
@@ -65,6 +66,8 @@ namespace WebApi.Jwt.Filters
 
         protected Task<IPrincipal> AuthenticateJwtToken(string token)
         {
+            Console.WriteLine(1);
+
             if (ValidateToken(token, out var username))
             {
                 // based on username to get more information from database in order to build local identity

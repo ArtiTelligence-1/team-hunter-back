@@ -37,20 +37,21 @@ class EventService : IEventService {
         await this.eventManager.DeleteOneAsync(e => e.Id == eventId);
     public async Task<Event> ModifyEventAsync(string eventId, EventUpdate eventUpdate) {
         UpdateDefinitionBuilder<Event> modification = Builders<Event>.Update;
+        List<UpdateDefinition<Event>> modifications = new List<UpdateDefinition<Event>>();
         Event eventModel = await this.GetEventByIdAsync(eventId);
         PropertyInfo[] eventUpdateProperties = this.eventManager.GetType().GetProperties();
         PropertyInfo[] eventProperties = eventModel.GetType().GetProperties();
 
         foreach(var item in eventUpdate.GetType().GetProperties()){
             if (item.GetValue(eventUpdate) is not null) {
-                modification.AddToSet(item.Name, item.GetValue(eventUpdate));
+                modifications.Add(modification.AddToSet(item.Name, item.GetValue(eventUpdate)));
 
                 eventProperties.First(prop => prop.Name == item.Name)
                     .SetValue(eventModel, item.GetValue(eventUpdate));
             }
         }
     
-        await this.eventManager.FindOneAndUpdateAsync(u => u.Id == eventId, modification.Combine());
+        await this.eventManager.FindOneAndUpdateAsync(u => u.Id == eventId, modification.Combine(modifications));
         return eventModel;
     }
     public async Task<bool> JoinEventAsync(string eventId, User participant) {

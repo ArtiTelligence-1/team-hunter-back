@@ -12,10 +12,12 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http;
 using TeamHunter.Models;
+using WebApi.Jwt.Filters;
 
 namespace TeamHunter.Controllers;
 
 [Route("/api/v1/user")]
+[EnableCors("Policy")]
 [ApiController]
 public class UserController: ControllerBase {
     private readonly IUserService _userManger;
@@ -31,9 +33,23 @@ public class UserController: ControllerBase {
         _tokenManager = new JwtSecurityTokenHandler();
     }
 
+    [HttpGet]
+    [Authorize]
+    public async Task<User?> GetUser(){
+        return await _userManger.GetUserFromSession(Request);
+    }
+
+    [HttpPut]
+    [Authorize]
+    public async Task<UserCreate> ModifyUser([FromBody]UserCreate userModify) {
+        User? user = await _userManger.GetUserFromSession(Request);
+        return UserCreate.fromUser(await _userManger.ModifyUserAsync(user!.Id.ToString()!, userModify));
+    }
+
     [HttpPost("oauth/telegram")]
-    public async Task<IActionResult> TelegrmOauth(TelegramOauthModel authModel){
-        string dataStr = $"auth_date={authModel.auth_date}\nfirst_name={authModel.first_name}\nid={authModel.id}username={authModel.username}";
+    public async Task<IActionResult> TelegrmOauth([FromBody]TelegramOauthModel authModel){
+        string dataStr = $"auth_date={authModel.auth_date}\nfirst_name={authModel.first_name}\nid={authModel.id}\nusername={authModel.username}";
+        Console.WriteLine(dataStr);
         // byte[] signature = _hmac.ComputeHash(Encoding.UTF8.GetBytes(dataStringBuilder.ToString()));
 
         var secretKey = ShaHash(_credentialsManager.TelegramBotToken);
@@ -55,12 +71,12 @@ public class UserController: ControllerBase {
                 user = await _userManger.CreateUserAsync(new UserCreate {
                     TelegramId = authModel.id,
                     FirstName = authModel.first_name,
-                    LastName = authModel.last_name,
+                    LastName = authModel.last_name ?? "",
                     PhotoUrl = authModel.photo_url
                 });
             }
 
-            await _userManger.CreateSessionAsync(
+            SessionInfo session = await _userManger.CreateSessionAsync(
                 user.Id! ?? MongoDB.Bson.ObjectId.Empty,
                 HttpContext.Connection.RemoteIpAddress!,
                 Request.Headers.UserAgent.First() ?? "");
@@ -75,14 +91,26 @@ public class UserController: ControllerBase {
             );
             return Ok(new TokenModel(){
                 access_token = _tokenManager.CreateEncodedJwt(new SecurityTokenDescriptor{
-                    Expires = DateTime.Now.AddHours(1),
+                    Expires = DateTime.Now.AddDays(4),
                     IssuedAt = DateTime.Now,
-                    Subject = new ClaimsIdentity("au", user.Id.ToString()!, "user")
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()!),
+                        new Claim("session", session.Id.ToString()),
+                        new Claim("type", "au")
+                    }),
+                    SigningCredentials = singer
                 }),
                 refresh_token = _tokenManager.CreateEncodedJwt(new SecurityTokenDescriptor{
                     Expires = DateTime.Now.AddHours(8),
                     IssuedAt = DateTime.Now,
-                    Subject = new ClaimsIdentity("re", user.Id.ToString()!, "user")
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()!),
+                        new Claim("session", session.Id.ToString()),
+                        new Claim("type", "re")
+                    }),
+                    SigningCredentials = singer
                 }),
             });
         }
@@ -95,7 +123,7 @@ public class UserController: ControllerBase {
     private  byte[] HashHmac(byte[] key, byte[] message) =>
         new HMACSHA256(key).ComputeHash(message);
     
-    private string GenerateToken(int userId)
+    private string GenerateToken(string userId)
     {
         var mySecret = "asdv234234^&%&^%&^hjsdfb2%%%";
         var mySecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(mySecret));
@@ -108,7 +136,7 @@ public class UserController: ControllerBase {
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, userId),
             }),
             Expires = DateTime.UtcNow.AddDays(7),
             Issuer = myIssuer,

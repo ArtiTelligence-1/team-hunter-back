@@ -7,13 +7,21 @@ using TeamHunter.Interfaces;
 
 using System.Reflection;
 using System.Net;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Security.Claims;
 
 public class UserService : IUserService
 {
     private readonly IMongoCollection<User> userManager;
+    private readonly ICredentialsService _creadentialsManager;
+    private readonly JwtSecurityTokenHandler _tokenManager;
 
-    public UserService(IDBSessionManagerService manager) {
+    public UserService(IDBSessionManagerService manager, ICredentialsService credentialsService) {
         userManager = manager.GetCollection<User>();
+        _creadentialsManager = credentialsService;
+        _tokenManager = new JwtSecurityTokenHandler();
     }
 
     public async Task<UserShortInfo> CreateUserAsync(UserCreate userCreate) {
@@ -40,26 +48,47 @@ public class UserService : IUserService
 
     public async Task<User> ModifyUserAsync(string userId, UserCreate userModify) {
         UpdateDefinitionBuilder<User> modification = Builders<User>.Update;
+        List<UpdateDefinition<User>> modifiactionList = new List<UpdateDefinition<User>>();
         User user = (await this.GetUserByIdAsync(userId))!;
         PropertyInfo[] userModifyProperties = userModify.GetType().GetProperties();
         PropertyInfo[] userProperties = user.GetType().GetProperties();
 
         foreach(var item in userModify.GetType().GetProperties()){
             if (item.GetValue(userModify) is not null) {
-                modification.AddToSet(item.Name, item.GetValue(userModify));
+                modifiactionList.Add(modification.Set(item.Name, item.GetValue(userModify)));
+                // await this.userManager.FindOneAndUpdateAsync(u => u.Id == user.Id, mod);
 
                 userProperties.First(prop => prop.Name == item.Name)
                     .SetValue(user, item.GetValue(userModify));
             }
         }
     
-        await this.userManager.FindOneAndUpdateAsync(u => u.Id == user.Id, modification.Combine());
+        await this.userManager.FindOneAndUpdateAsync(u => u.Id == user.Id, modification.Combine(modifiactionList));
         return user;
     }
     public async Task DeleteUserAsync(string userId) {
         ObjectId userObjectId = new ObjectId(userId);
 
         await this.userManager.DeleteOneAsync(u => u.Id == userObjectId);
+    }
+    public async Task<User?> GetUserFromSession(HttpRequest request){
+        string authString = request.Headers.Authorization.First() ?? "";
+        if (authString.Substring(0, 6) == "Bearer"){
+            string token = authString.Substring(7);
+
+            var validationResult = await _tokenManager.ValidateTokenAsync(token, new TokenValidationParameters{
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_creadentialsManager.TokenSecret)) 
+            });
+
+            if (validationResult.IsValid){
+                return await GetUserByIdAsync(_tokenManager.ReadJwtToken(token).Payload["nameid"].ToString()!);
+            }
+        }
+        return null;
     }
     public async Task<SessionInfo> CreateSessionAsync(ObjectId userId, IPAddress ipAddress, string userAgent) {
         User user = await this.GetUserAsync(userId);

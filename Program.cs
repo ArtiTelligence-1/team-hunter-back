@@ -20,26 +20,57 @@ builder.Services.AddSingleton<ISettingsManagerService, SettingsManagerService>()
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(o =>
-{
-    o.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes("fadlkf;aoivn;pija;'oejlfv;aoin;obaij;onaitb;ialjkz.d,kvfjb nam/eopv;jkv;n" /* builder.Configuration["Jwt:Key"] */)),
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = false,
-        ValidateIssuerSigningKey = true
-    };
-});builder.Services.AddAuthorization();// Add configuration from appsettings.json
-builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>  
+    {  
+        options.TokenValidationParameters = new TokenValidationParameters  
+        {  
+            ValidateIssuer = false,  
+            ValidateAudience = false,  
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            // ValidIssuer = Configuration["Jwt:Issuer"],  
+            // ValidAudience = Configuration["Jwt:Issuer"],  
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("TOKEN_SECRET")!))  
+        };
+        options!.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context => {
+                // Log failed authentication here
+
+                context.Response.OnStarting(async () => {
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync(context.Exception.Message);
+                });
+                // Return control back to JWT Bearer middleware
+                return Task.CompletedTask;
+            }
+        };
+    }
+);
+
+// builder.Services.AddAuthentication(options =>
+// {
+//     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+// }).AddJwtBearer(o =>
+// {
+//     o.TokenValidationParameters = new TokenValidationParameters
+//     {
+//         // ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//         // ValidAudience = builder.Configuration["Jwt:Audience"],
+//         IssuerSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("TOKEN_SECRET")! /* builder.Configuration["Jwt:Key"] */)),
+//         ValidateIssuer = false,
+//         ValidateAudience = false,
+//         ValidateLifetime = false,
+//         ValidateIssuerSigningKey = true
+//     };
+// });
+// builder.Services.AddAuthorization();// Add configuration from appsettings.json
+
+// builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+//     .AddEnvironmentVariables();
 
 // builder.Services.AddSingleton<UserService>();
 // builder.Services.AddSingleton<UserPhotoService>();
