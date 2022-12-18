@@ -26,18 +26,17 @@ public class UserService : IUserService
 
     public async Task<UserShortInfo> CreateUserAsync(UserCreate userCreate) {
         User user = userCreate.ToUser();
-        user.Id = ObjectId.GenerateNewId();
+        user.Id = ObjectId.GenerateNewId().ToString();
 
         await this.userManager.InsertOneAsync(user);
         
         return user;
     }
 
-    protected async Task<User> GetUserAsync(ObjectId userId) =>
+    protected async Task<User> GetUserAsync(string userId) =>
         (await userManager.FindAsync(user => user.Id == userId)).First();
     protected async Task<IAsyncCursor<User>> GetUserCursorById(string userId){
-        ObjectId userObjectId = new ObjectId(userId);
-        return await userManager.FindAsync(user => user.Id == userObjectId);
+        return await userManager.FindAsync(user => user.Id == userId);
     }
 
     public async Task<User?> GetUserByIdAsync(string userId) =>
@@ -67,11 +66,9 @@ public class UserService : IUserService
         return user;
     }
     public async Task DeleteUserAsync(string userId) {
-        ObjectId userObjectId = new ObjectId(userId);
-
-        await this.userManager.DeleteOneAsync(u => u.Id == userObjectId);
+        await this.userManager.DeleteOneAsync(u => u.Id == userId);
     }
-    public async Task<User?> GetUserFromSession(HttpRequest request){
+    public async Task<User?> GetUserFromSessionAsync(HttpRequest request){
         string authString = request.Headers.Authorization.First() ?? "";
         if (authString.Substring(0, 6) == "Bearer"){
             string token = authString.Substring(7);
@@ -90,7 +87,7 @@ public class UserService : IUserService
         }
         return null;
     }
-    public async Task<SessionInfo> CreateSessionAsync(ObjectId userId, IPAddress ipAddress, string userAgent) {
+    public async Task<SessionInfo> CreateSessionAsync(string userId, IPAddress ipAddress, string userAgent) {
         User user = await this.GetUserAsync(userId);
         SessionInfo session = new SessionInfo(){
             IPAddress = ipAddress.ToString(),

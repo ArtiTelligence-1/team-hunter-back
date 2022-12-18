@@ -22,8 +22,12 @@ class EventService : IEventService {
         await this.GetEventsAsync(e => true);
     public async Task<List<Event>> GetEventsAsync(Expression<Func<Event, bool>> filter) =>
         await (await this.eventManager.FindAsync(filter)).ToListAsync();
-    public async Task<Event> GetEventByIdAsync(string eventId) =>
-        (await this.GetEventsAsync(e => e.Id == eventId)).First();
+    public async Task<Event> GetEventByIdAsync(string eventId) {
+        var events = (await this.GetEventsAsync(e => e.Id == eventId)).ToList();
+        if (events.Count != 0) 
+            return events.First();
+        throw new NullReferenceException();
+    }
     public async Task<List<Event>> GetEventsByTypeAsync(string type) =>
         await this.GetEventsAsync(e => e.Type == type);
     public async Task<Event> CreateEventAsync(User owner, EventCreate eventCreate) {
@@ -76,8 +80,18 @@ class EventService : IEventService {
         }
         return false;
     }
-    public async Task<Discussion> LoadCommentsAsync(string eventId) =>
-        (await this.discussionManager.FindAsync(d => d.EventId == eventId)).First();
+    public async Task<Discussion> LoadCommentsAsync(string eventId) {
+        var discussion = (await this.discussionManager.FindAsync(d => d.EventId == eventId));
+        try{
+            return discussion.First();
+        }catch(System.InvalidOperationException){}
+        Discussion newDiscussion = new Discussion() {
+            EventId = eventId
+        };
+        await this.discussionManager.InsertOneAsync(newDiscussion);
+        return newDiscussion;
+    }
+
     public async Task<Comment> PostCommentAsync(string eventId, User participant, string text, DateTime? replyToCommentId) {
         Discussion discussion = await this.LoadCommentsAsync(eventId);
         Comment newComment = new Comment() {
@@ -89,7 +103,7 @@ class EventService : IEventService {
             discussion.Comments.Find(c => c.Id == replyToCommentId)!.Replies.Add(newComment.Id);
 
         discussion.Comments.Add(newComment);
-        UpdateDefinition<Discussion> update = Builders<Discussion>.Update.Set("Messages", discussion.Comments);
+        UpdateDefinition<Discussion> update = Builders<Discussion>.Update.Set("Comments", discussion.Comments);
         await this.discussionManager.UpdateOneAsync(d => d.EventId == eventId, update);
         await this.SyncEventWithDiscussionAsync(discussion);
         return newComment;

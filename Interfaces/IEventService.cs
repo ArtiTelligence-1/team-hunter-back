@@ -16,7 +16,7 @@ public interface IEventService
     Task<bool> JoinEventAsync(string eventId, User participant);
     Task<bool> LeaveEventAsync(string eventId, User participant);
     Task<Discussion> LoadCommentsAsync(string eventId);
-    Task<Comment> PostCommentAsync(string eventId, User participant, string text, DateTime? replyToCommentDate);
+    Task<Comment> PostCommentAsync(string eventId, User participant, string text, DateTime? replyToCommentDate = null);
     Task DeleteCommentAsync(string eventId, DateTime commentId);
     
 }

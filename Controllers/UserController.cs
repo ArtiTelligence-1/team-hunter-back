@@ -36,14 +36,14 @@ public class UserController: ControllerBase {
     [HttpGet]
     [Authorize]
     public async Task<User?> GetUser(){
-        return await _userManger.GetUserFromSession(Request);
+        return await _userManger.GetUserFromSessionAsync(Request);
     }
 
     [HttpPut]
     [Authorize]
     public async Task<UserCreate> ModifyUser([FromBody]UserCreate userModify) {
-        User? user = await _userManger.GetUserFromSession(Request);
-        return UserCreate.fromUser(await _userManger.ModifyUserAsync(user!.Id.ToString()!, userModify));
+        User? user = await _userManger.GetUserFromSessionAsync(Request);
+        return UserCreate.fromUser(await _userManger.ModifyUserAsync(user!.Id!.ToString()!, userModify));
     }
 
     [HttpPost("oauth/telegram")]
@@ -77,7 +77,7 @@ public class UserController: ControllerBase {
             }
 
             SessionInfo session = await _userManger.CreateSessionAsync(
-                user.Id! ?? MongoDB.Bson.ObjectId.Empty,
+                user.Id! ?? MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
                 HttpContext.Connection.RemoteIpAddress!,
                 Request.Headers.UserAgent.First() ?? "");
 

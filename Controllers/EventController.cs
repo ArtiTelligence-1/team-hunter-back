@@ -4,6 +4,7 @@ using TeamHunter.Models;
 using TeamHunter.Models.DTO;
 using TeamHunter.Services;
 using TeamHunter.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using System.Web;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -14,12 +15,17 @@ namespace TeamHunter.Controllers ;
 //[DisableCors]
 public class EventsController : ControllerBase
 {
-    private IEventService _eventManager;
-    private ISettingsService settings;
+    private readonly IEventService _eventManager;
+    private readonly ISettingsService _settings;
+    private readonly IUserService _userManager;
 
-    public EventsController(ISettingsService settings, IEventService eventManager) {
-        this.settings = settings;
+    public EventsController(
+            ISettingsService settings,
+            IEventService eventManager,
+            IUserService userManager) {
+        this._settings = settings;
         this._eventManager = eventManager;
+        this._userManager = userManager;
     }
 
     [HttpGet("")]
@@ -85,19 +91,32 @@ public class EventsController : ControllerBase
         return NoContent();
     }
 
-     [HttpPost("{id}/comment")]
-     public async Task<Discussion> GetComments(string id, int limit = 0) {
+    [HttpGet("{id}/comment")]
+    public async Task<Discussion> GetComments(string id, int limit = 0) {
         // await _eventManager.LoadCommentsAsync(id);
         return await _eventManager.LoadCommentsAsync(id);
-     }
+    }
+
+    [HttpPost("{id}/comment")]
+    [Authorize]
+    public async Task<Comment> AddComment(string id, [FromBody]CommentCreate newComment) {
+        User? user = await _userManager.GetUserFromSessionAsync(Request);
+        return await _eventManager.PostCommentAsync(id, user!, newComment.text!);
+    }
 
     [HttpPost("{id}/join")]
     public async Task<ResponseMessage> JoinEvent(string id){
-        // var tokenHandler = new JwtSecurityTokenHandler();
-        await _eventManager.GetEventByIdAsync(id);
+        User? user = await _userManager.GetUserFromSessionAsync(Request);
+        Event currentEvent = await _eventManager.GetEventByIdAsync(id);
 
-        // Console.WriteLine(tokenHandler.ReadJwtToken(HttpContext.Request.Headers.Authorization.First().Split(" ")[1]));
+        if (user is not null){
+            if (currentEvent.Participants.Contains(user!))
+                await _eventManager.LeaveEventAsync(id, user!);
+            else
+                await _eventManager.JoinEventAsync(id, user!);
+            return ResponseMessage.Ok();
+        }
 
-        return ResponseMessage.Ok();
+        return ResponseMessage.Message("user not found");
     }
 }

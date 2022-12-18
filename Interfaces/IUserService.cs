@@ -13,7 +13,7 @@ public interface IUserService
     Task<User?> GetUserByTelegramIdAsync(long userTelegramId);
     Task<User> ModifyUserAsync(string userId, UserCreate userModify);
     Task DeleteUserAsync(string userId);
-    Task<User?> GetUserFromSession(HttpRequest request);
-    Task<SessionInfo> CreateSessionAsync(ObjectId userId, IPAddress ipAddress, string userAgent);
+    Task<User?> GetUserFromSessionAsync(HttpRequest request);
+    Task<SessionInfo> CreateSessionAsync(string userId, IPAddress ipAddress, string userAgent);
     Task DeleteSessionAsync(string userId, string sessionId);
 }
