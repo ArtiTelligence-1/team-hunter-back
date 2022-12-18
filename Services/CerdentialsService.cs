@@ -10,4 +10,6 @@ public class CerdentialsService : ICredentialsService
     public string DatabaseName { get => Environment.GetEnvironmentVariable("DATABASE_NAME")!; }
     public string DatabaseConnectionString { get => $"mongodb+srv://{this.DatabaseUsername}:{this.DatabasePassword}@{this.DatabaseUrl}/{this.DatabaseName}"; }
     public string TelegramBotToken { get => Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN")!; }
+    public string TokenSecret { get => Environment.GetEnvironmentVariable("TOKEN_SECRET")!; }
+
 }

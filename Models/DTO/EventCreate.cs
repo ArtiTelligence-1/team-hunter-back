@@ -2,36 +2,35 @@ namespace TeamHunter.Models.DTO;
 
 public class EventCreate {
     // public User? Owner { get; set; }
-    public string? Title { get; set; }
-    public string? Type { get; set; }
-    public int ParticipantsLimit { get; set; }
-    public AgeInterval? AgeLimitGap { get; set; }
-    public DateTime? HoldingTime { get; set; }
-    public Location? Location { get; set; }
-    public string? Description { get; set; }
-    public string? PosterUrl { get; set; }
+    public string? title { get; set; }
+    public string? type { get; set; }
+    public int participantsLimit { get; set; }
+    public AgeInterval? ageLimitGap { get; set; }
+    public DateTime? holdingTime { get; set; }
+    public Location? location { get; set; }
+    public string? description { get; set; }
+    public string? posterUrl { get; set; }
 
-    bool Validate() => 
-        // this.Owner is not null &&
-        this.Title is not null &&
-        this.AgeLimitGap is not null &&
-        this.HoldingTime is not null &&
-        this.Location is not null &&
-        this.Description is not null &&
-        this.PosterUrl is not null;
+    public bool Validate() =>
+        this.title is not null &&
+        this.ageLimitGap is not null &&
+        this.holdingTime is not null &&
+        this.location is not null &&
+        this.description is not null &&
+        this.posterUrl is not null;
 
     public Event toEvent() =>
-        this.Validate() ?
+        !this.Validate() ?
             throw new ArgumentNullException()
         : 
             new Event(){
-                Title = this.Title,
-                Type = this.Type,
-                ParticipantsLimit = this.ParticipantsLimit,
-                AgeLimitGap = this.AgeLimitGap,
-                HoldingTime = this.HoldingTime!.Value,
-                Location = this.Location,
-                Description = this.Description,
-                PosterUrl = this.PosterUrl
+                Title = this.title,
+                Type = this.type,
+                ParticipantsLimit = this.participantsLimit,
+                AgeLimitGap = this.ageLimitGap,
+                HoldingTime = this.holdingTime!.Value,
+                Location = this.location,
+                Description = this.description,
+                PosterUrl = this.posterUrl
             };
 }

@@ -21,7 +21,8 @@
         "DATABASE_PASSWORD": "s5Mow6GVOjbCglnU",
         "DATABASE_URL": "teamhuntercluster.umpns4z.mongodb.net",
         "DATABASE_NAME": "TeamHunterDB",
-        "TELEGRAM_BOT_TOKEN": "1964231384:AAFjZA1aEyAWUQKDfnWDo3Z6_1lmP3lQzT0"
+        "TELEGRAM_BOT_TOKEN": "1964231384:AAFjZA1aEyAWUQKDfnWDo3Z6_1lmP3lQzT0",
+        "TOKEN_SECRET": "ZfxPç¸ÎY¿5ÈÁ5¥qR9NM5ÁÒé°¢éàm´YÖwdç¾ÑÛ¾±qQáýáYÍµà£õÃ¾´¾ÖfÄÑúòEX·Ú²çxZá¯DüÌ¿¶îÚaHÑ"
       }
     },
     "IIS Express": {

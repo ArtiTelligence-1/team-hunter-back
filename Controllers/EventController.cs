@@ -5,6 +5,8 @@ using TeamHunter.Models.DTO;
 using TeamHunter.Services;
 using TeamHunter.Interfaces;
 using System.Web;
+using System.IdentityModel.Tokens.Jwt;
+
 namespace TeamHunter.Controllers ;
 [ApiController]
 [Route("/api/v1/events")]
@@ -23,9 +25,6 @@ public class EventsController : ControllerBase
     [HttpGet("")]
     public async Task<List<Event>> GetAllEvents(string? eventType) {
         var events = await _eventManager.GetEventsAsync();
-        
-        Console.WriteLine(settings.EventTypes.Count());
-        Console.WriteLine(settings.MessageRepliesLimit);
 
         if (eventType is null)
             return await _eventManager.GetEventsAsync();
@@ -36,13 +35,13 @@ public class EventsController : ControllerBase
     }
 
     [HttpPost("")]
-    public async Task<Event> CreateEvent(EventCreate newEvent)
+    public async Task<Event> CreateEvent([FromBody] EventCreate newEvent)
     {
-        // try:
-            Event createdEvent = await _eventManager.CreateEventAsync(new User(), newEvent);
-        // catch
-
-        return createdEvent;
+        try {
+            return await _eventManager.CreateEventAsync(new User(), newEvent);
+        } catch (System.ArgumentNullException){
+            return new Event();
+        }
     }
 
     [HttpGet("{Id}")]
@@ -84,5 +83,21 @@ public class EventsController : ControllerBase
         await _eventManager.DeleteEventAsync(Id);
 
         return NoContent();
+    }
+
+     [HttpPost("{id}/comment")]
+     public async Task<Discussion> GetComments(string id, int limit = 0) {
+        // await _eventManager.LoadCommentsAsync(id);
+        return await _eventManager.LoadCommentsAsync(id);
+     }
+
+    [HttpPost("{id}/join")]
+    public async Task<ResponseMessage> JoinEvent(string id){
+        // var tokenHandler = new JwtSecurityTokenHandler();
+        await _eventManager.GetEventByIdAsync(id);
+
+        // Console.WriteLine(tokenHandler.ReadJwtToken(HttpContext.Request.Headers.Authorization.First().Split(" ")[1]));
+
+        return ResponseMessage.Ok();
     }
 }

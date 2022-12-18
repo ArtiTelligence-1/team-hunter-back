@@ -16,7 +16,7 @@ public class Event
     public string? Type { get; set; }
     [BsonRequired]
     public int ParticipantsLimit { get; set; }
-    public List<User> Participants { get; set; } = new List<User>();
+    public List<UserShortInfo> Participants { get; set; } = new List<UserShortInfo>();
     [BsonRequired]
     public AgeInterval? AgeLimitGap { get; set; }
     [BsonRepresentation(BsonType.DateTime)]

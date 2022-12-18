@@ -8,5 +8,5 @@ public interface ICredentialsService
     public string DatabaseName { get; }
     public string DatabaseConnectionString { get; }
     public string TelegramBotToken { get; }
-    
+    public string TokenSecret { get; }
 }

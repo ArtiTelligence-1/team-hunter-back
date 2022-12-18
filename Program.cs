@@ -4,7 +4,9 @@ using TeamHunter.Interfaces;
 using TeamHunter.Models.DTO;
 using TeamHunter.Models;
 using TeamHunter.Services;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -18,13 +20,31 @@ builder.Services.AddSingleton<ISettingsManagerService, SettingsManagerService>()
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<IUserService, UserService>();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey (Encoding.UTF8.GetBytes("fadlkf;aoivn;pija;'oejlfv;aoin;obaij;onaitb;ialjkz.d,kvfjb nam/eopv;jkv;n" /* builder.Configuration["Jwt:Key"] */)),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true
+    };
+});builder.Services.AddAuthorization();// Add configuration from appsettings.json
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // builder.Services.AddSingleton<UserService>();
 // builder.Services.AddSingleton<UserPhotoService>();
 // builder.Services.AddSingleton<EventService>();
 // builder.Services.AddSingleton<EventTagService>();
-
-
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>

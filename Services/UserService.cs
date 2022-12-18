@@ -25,6 +25,8 @@ public class UserService : IUserService
         return user;
     }
 
+    protected async Task<User> GetUserAsync(ObjectId userId) =>
+        (await userManager.FindAsync(user => user.Id == userId)).First();
     protected async Task<IAsyncCursor<User>> GetUserCursorById(string userId){
         ObjectId userObjectId = new ObjectId(userId);
         return await userManager.FindAsync(user => user.Id == userObjectId);
@@ -59,10 +61,10 @@ public class UserService : IUserService
 
         await this.userManager.DeleteOneAsync(u => u.Id == userObjectId);
     }
-    public async Task<SessionInfo> CreateSessionAsync(string userId, IPAddress ipAddress, string userAgent) {
-        User user = (await this.GetUserByIdAsync(userId))!;
+    public async Task<SessionInfo> CreateSessionAsync(ObjectId userId, IPAddress ipAddress, string userAgent) {
+        User user = await this.GetUserAsync(userId);
         SessionInfo session = new SessionInfo(){
-            IPAddress = ipAddress,
+            IPAddress = ipAddress.ToString(),
             Agent = userAgent
         };
         user.ActiveSessions.Add(session);

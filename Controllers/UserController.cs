@@ -20,10 +20,15 @@ namespace TeamHunter.Controllers;
 public class UserController: ControllerBase {
     private readonly IUserService _userManger;
     private readonly ICredentialsService _credentialsManager;
+    private readonly JwtSecurityTokenHandler _tokenManager;
 
-    public UserController(IUserService userService, ICredentialsService applicationCredentialsService){
+    public UserController(
+            IUserService userService,
+            ICredentialsService applicationCredentialsService
+    ){
         _userManger = userService;
         _credentialsManager = applicationCredentialsService;
+        _tokenManager = new JwtSecurityTokenHandler();
     }
 
     [HttpPost("oauth/telegram")]
@@ -46,38 +51,50 @@ public class UserController: ControllerBase {
         {
             UserShortInfo? user = await _userManger.GetUserByTelegramIdAsync(authModel.id);
 
-            if (user == null)
-            {
+            if (user is null) {
                 user = await _userManger.CreateUserAsync(new UserCreate {
                     TelegramId = authModel.id,
                     FirstName = authModel.first_name,
                     LastName = authModel.last_name,
                     PhotoUrl = authModel.photo_url
                 });
-            //     var newUser = new User{UserId = authModel.id, Name = authModel.first_name};
-            //     await _userManger.CreateUser(newUser);
-            //     user = _userManger.GetUserById(newUser.UserId);
             }
-            
 
+            await _userManger.CreateSessionAsync(
+                user.Id! ?? MongoDB.Bson.ObjectId.Empty,
+                HttpContext.Connection.RemoteIpAddress!,
+                Request.Headers.UserAgent.First() ?? "");
 
-            return Ok(user == null);
+            SigningCredentials singer = new SigningCredentials(
+                new SymmetricSecurityKey(
+                    Encoding.ASCII.GetBytes(
+                        _credentialsManager.TokenSecret
+                    )
+                ),
+                SecurityAlgorithms.HmacSha512Signature
+            );
+            return Ok(new TokenModel(){
+                access_token = _tokenManager.CreateEncodedJwt(new SecurityTokenDescriptor{
+                    Expires = DateTime.Now.AddHours(1),
+                    IssuedAt = DateTime.Now,
+                    Subject = new ClaimsIdentity("au", user.Id.ToString()!, "user")
+                }),
+                refresh_token = _tokenManager.CreateEncodedJwt(new SecurityTokenDescriptor{
+                    Expires = DateTime.Now.AddHours(8),
+                    IssuedAt = DateTime.Now,
+                    Subject = new ClaimsIdentity("re", user.Id.ToString()!, "user")
+                }),
+            });
         }
         return BadRequest("hash error");
     }
 
-    private  byte[] ShaHash(String value) { 
-        using (var hasher = SHA256.Create()) 
-        
-        { return hasher.ComputeHash(Encoding.UTF8.GetBytes(value)); } 
-    }
+    private byte[] ShaHash(String value) =>
+        SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(value));
 
-    private  byte[] HashHmac(byte[] key, byte[] message)
-    {
-        var hash = new HMACSHA256(key);
-        return hash.ComputeHash(message);
-    }
-
+    private  byte[] HashHmac(byte[] key, byte[] message) =>
+        new HMACSHA256(key).ComputeHash(message);
+    
     private string GenerateToken(int userId)
     {
         var mySecret = "asdv234234^&%&^%&^hjsdfb2%%%";
