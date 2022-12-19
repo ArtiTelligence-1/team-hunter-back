@@ -71,8 +71,9 @@ class EventService : IEventService {
     }
     public async Task<bool> LeaveEventAsync(string eventId, User participant) {
         Event eventModel = await this.GetEventByIdAsync(eventId);
-        if (eventModel.Participants.Contains(participant)) {
+        if (eventModel.Participants.Where(u => u.Id == participant.Id).Count() > 0) {
             eventModel.Participants.RemoveAt(eventModel.Participants.FindIndex(u => u.Id == participant.Id));
+            
             UpdateDefinition<Event> update = Builders<Event>.Update.Set("Participants", eventModel.Participants);
 
             await this.eventManager.UpdateOneAsync(e => e.Id == eventId, update);

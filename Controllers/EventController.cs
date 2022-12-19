@@ -110,11 +110,14 @@ public class EventsController : ControllerBase
         Event currentEvent = await _eventManager.GetEventByIdAsync(id);
 
         if (user is not null){
-            if (currentEvent.Participants.Contains(user!))
+            if (currentEvent.Participants.Where(u => u.Id == user.Id).Count() > 0){
                 await _eventManager.LeaveEventAsync(id, user!);
-            else
+                return ResponseMessage.Ok("unjoined");
+            }
+            else {
                 await _eventManager.JoinEventAsync(id, user!);
-            return ResponseMessage.Ok();
+                return ResponseMessage.Ok("joined");
+            }
         }
 
         return ResponseMessage.Message("user not found");

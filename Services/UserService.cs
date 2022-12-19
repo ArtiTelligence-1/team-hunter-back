@@ -53,6 +53,7 @@ public class UserService : IUserService
         PropertyInfo[] userProperties = user.GetType().GetProperties();
 
         foreach(var item in userModify.GetType().GetProperties()){
+            if (item.Name == "Id") continue;
             if (item.GetValue(userModify) is not null) {
                 modifiactionList.Add(modification.Set(item.Name, item.GetValue(userModify)));
                 // await this.userManager.FindOneAndUpdateAsync(u => u.Id == user.Id, mod);

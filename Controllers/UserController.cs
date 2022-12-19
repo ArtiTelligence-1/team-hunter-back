@@ -47,6 +47,7 @@ public class UserController: ControllerBase {
     }
 
     [HttpPost("oauth/telegram")]
+    [AllowAnonymous]
     public async Task<IActionResult> TelegrmOauth([FromBody]TelegramOauthModel authModel){
         string dataStr = $"auth_date={authModel.auth_date}\nfirst_name={authModel.first_name}\nid={authModel.id}\nusername={authModel.username}";
         Console.WriteLine(dataStr);

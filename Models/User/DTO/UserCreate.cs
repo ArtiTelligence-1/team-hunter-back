@@ -1,6 +1,7 @@
 namespace TeamHunter.Models.DTO;
 
 public class UserCreate {
+    public string? Id { get; set; }
     public long? TelegramId { get; set; }
     public string? FirstName { get; set; }
     public string LastName { get; set; } = String.Empty;

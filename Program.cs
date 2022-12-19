@@ -87,6 +87,7 @@ builder.Services.AddCors(options =>
                                 "https://localhost:7113",
                                 "http://localhost:4000",
                                 "http://localhost:5050",
+                                "https://2867-185-17-127-253.eu.ngrok.io",
                                 "https://team-hunter-front-staging.herokuapp.com")
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
